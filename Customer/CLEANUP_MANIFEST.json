@@ -1,0 +1,455 @@
+﻿{
+  "date": "2026-11-04",
+  "backupRoot": "C:/cms-fe-backups/2026-11-04-js-only",
+  "count": 64,
+  "files": [
+    {
+      "formerPath": "artifacts/apply-light-theme.py",
+      "category": "unused-migration-tool",
+      "action": "preserved-outside-delivery",
+      "sha256": "2b074e4a7d07d65263ceccc4562920625999fb820a96fd7bd128197a359708ff",
+      "backupRelativePath": "artifacts/apply-light-theme.py"
+    },
+    {
+      "formerPath": "artifacts/assignment-extracted.txt",
+      "category": "historical-audit-or-report",
+      "action": "preserved-outside-delivery",
+      "sha256": "41cd38ef37b8ae7629f18b420db11eab308dd79628f8b65296e65f2cc7f70f15",
+      "backupRelativePath": "artifacts/assignment-extracted.txt"
+    },
+    {
+      "formerPath": "artifacts/before-light-theme.zip",
+      "category": "historical-backup",
+      "action": "preserved-outside-delivery",
+      "sha256": "d00fad7dad26c9eca7fb3c2c366321cfe66a7ad42d050a37c3133073a080f5f8",
+      "backupRelativePath": "artifacts/before-light-theme.zip"
+    },
+    {
+      "formerPath": "artifacts/cart-1024.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "64dc3d63bf22b39471b5e609bafd0faa4650ca089990c72ccd59436d4240ab55",
+      "backupRelativePath": "artifacts/cart-1024.png"
+    },
+    {
+      "formerPath": "artifacts/cart-1440.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "72ac496a0b57b37ee240f4a068f641c31e1ee3ed54b07ee347de310b0bfcc241",
+      "backupRelativePath": "artifacts/cart-1440.png"
+    },
+    {
+      "formerPath": "artifacts/cart-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "34e36333b2578771493c264d4452e68076a223db5cb5490b7555b82638020db1",
+      "backupRelativePath": "artifacts/cart-375.png"
+    },
+    {
+      "formerPath": "artifacts/cart-768.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "6fe2328a192d46143a554f068e076f24f0de57867cdaf47799a8531b91057964",
+      "backupRelativePath": "artifacts/cart-768.png"
+    },
+    {
+      "formerPath": "artifacts/checkout-1024.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "18a2aa79bb85430e60bbd99bbcffb2347eb1dbbf35596e37d83ded944abade7f",
+      "backupRelativePath": "artifacts/checkout-1024.png"
+    },
+    {
+      "formerPath": "artifacts/checkout-1440.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "561294aaad7bdaa0cf1e07d2968de57aa839114d4ebe42bdde73b0d1e8ae0c35",
+      "backupRelativePath": "artifacts/checkout-1440.png"
+    },
+    {
+      "formerPath": "artifacts/checkout-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "4cd4c213d04c439986993879b12dc26d1c8ac4349abc49a99396990db34d8ca0",
+      "backupRelativePath": "artifacts/checkout-375.png"
+    },
+    {
+      "formerPath": "artifacts/checkout-768.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "b8ca137b1dde00e21718a188c39d4129d13a460ec4c539c0c64040d2e336562f",
+      "backupRelativePath": "artifacts/checkout-768.png"
+    },
+    {
+      "formerPath": "artifacts/cinema-1024.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "857570839f9a6fd74e0a327242e6e6ac858af8047c13506e628112ee5d6ade6e",
+      "backupRelativePath": "artifacts/cinema-1024.png"
+    },
+    {
+      "formerPath": "artifacts/cinema-1440.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "66330946f751249be21a75ee78b1209cd699a74afa2aab92a150d8adddbeed93",
+      "backupRelativePath": "artifacts/cinema-1440.png"
+    },
+    {
+      "formerPath": "artifacts/cinema-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "50514a1827d2fb54c5d247c431d2c06cc5a7dd49f133d3d07ce11fc29bca8f96",
+      "backupRelativePath": "artifacts/cinema-375.png"
+    },
+    {
+      "formerPath": "artifacts/cinema-768.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "dce1de3266c77dedcc65b20153ca30d3544b824405aa38520be86657c14ba566",
+      "backupRelativePath": "artifacts/cinema-768.png"
+    },
+    {
+      "formerPath": "artifacts/finalize-report.py",
+      "category": "unused-migration-tool",
+      "action": "preserved-outside-delivery",
+      "sha256": "01b2e04b40d1afc01bb44937f5358621ca363b57248f020219e833691b3e51b0",
+      "backupRelativePath": "artifacts/finalize-report.py"
+    },
+    {
+      "formerPath": "artifacts/home-1024.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "88d8d3107d20b466cc60b583140bf44c9bcf813b72b46d21513b1ae7e2f02a63",
+      "backupRelativePath": "artifacts/home-1024.png"
+    },
+    {
+      "formerPath": "artifacts/home-1440.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "4293d8c14944286d5b9af06b33d8481df46fee498338d263a38a53ca8dc8f214",
+      "backupRelativePath": "artifacts/home-1440.png"
+    },
+    {
+      "formerPath": "artifacts/home-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "1afe5bc7a005570d43ecb14d594f94e918927a241694b4aad494892a21356562",
+      "backupRelativePath": "artifacts/home-375.png"
+    },
+    {
+      "formerPath": "artifacts/home-768.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "2f62d9dc8df36eb4743b0cab74150fd0a6d94e57e9fa902bc95024b17d3c4914",
+      "backupRelativePath": "artifacts/home-768.png"
+    },
+    {
+      "formerPath": "artifacts/light-auth-error-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "c8c8133b185d10322f53ea5935ff653db1befc21f6860a467deb81ff53850cbe",
+      "backupRelativePath": "artifacts/light-auth-error-375.png"
+    },
+    {
+      "formerPath": "artifacts/light-checkout-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "4cd4c213d04c439986993879b12dc26d1c8ac4349abc49a99396990db34d8ca0",
+      "backupRelativePath": "artifacts/light-checkout-375.png"
+    },
+    {
+      "formerPath": "artifacts/light-cinemas-1024.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "c9475aa1db9f63882da135b95bb0472cb8c42b487b788e35c9a81d1c0da2db6b",
+      "backupRelativePath": "artifacts/light-cinemas-1024.png"
+    },
+    {
+      "formerPath": "artifacts/light-cinemas-1440.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "0c40972314fab9563ff9fc87f058beeef30dd491e56fc39e3dd16725c074bb92",
+      "backupRelativePath": "artifacts/light-cinemas-1440.png"
+    },
+    {
+      "formerPath": "artifacts/light-cinemas-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "109388aa4fd4e6b5390b1cc8aa06cee67b5c03ed2e055e9fd2df578dd6d6d0ef",
+      "backupRelativePath": "artifacts/light-cinemas-375.png"
+    },
+    {
+      "formerPath": "artifacts/light-cinemas-768.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "e097c7e355837b37aa1d207f28a8218adb482fee8bdf75f11f06895d8607c9cd",
+      "backupRelativePath": "artifacts/light-cinemas-768.png"
+    },
+    {
+      "formerPath": "artifacts/light-home-1024.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "88d8d3107d20b466cc60b583140bf44c9bcf813b72b46d21513b1ae7e2f02a63",
+      "backupRelativePath": "artifacts/light-home-1024.png"
+    },
+    {
+      "formerPath": "artifacts/light-home-1440.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "4293d8c14944286d5b9af06b33d8481df46fee498338d263a38a53ca8dc8f214",
+      "backupRelativePath": "artifacts/light-home-1440.png"
+    },
+    {
+      "formerPath": "artifacts/light-home-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "1afe5bc7a005570d43ecb14d594f94e918927a241694b4aad494892a21356562",
+      "backupRelativePath": "artifacts/light-home-375.png"
+    },
+    {
+      "formerPath": "artifacts/light-home-768.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "2f62d9dc8df36eb4743b0cab74150fd0a6d94e57e9fa902bc95024b17d3c4914",
+      "backupRelativePath": "artifacts/light-home-768.png"
+    },
+    {
+      "formerPath": "artifacts/light-movie-1024.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "b4eae38aac5ef75bf755d511a9522f2ad19fe9ba3fdf8ff411ac3017bd38d143",
+      "backupRelativePath": "artifacts/light-movie-1024.png"
+    },
+    {
+      "formerPath": "artifacts/light-movie-1440.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "b2549b2c46e5f3a558423fb2db2f4205f1b391bc7167f0d7e5a896b0f78af398",
+      "backupRelativePath": "artifacts/light-movie-1440.png"
+    },
+    {
+      "formerPath": "artifacts/light-movie-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "42cbac8aa3b7b3d34113632d1156a281173c173da316415a2dbe8e17f7e515e0",
+      "backupRelativePath": "artifacts/light-movie-375.png"
+    },
+    {
+      "formerPath": "artifacts/light-movie-768.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "1f676433aea02707bcb2d573ad0efc1a627859baf1c74c2b44f493757a1ba0b3",
+      "backupRelativePath": "artifacts/light-movie-768.png"
+    },
+    {
+      "formerPath": "artifacts/light-products-1024.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "76931e5daee3aff395b95a411b4f77f6c01051bd71636ebe53e8fd9f54f01f08",
+      "backupRelativePath": "artifacts/light-products-1024.png"
+    },
+    {
+      "formerPath": "artifacts/light-products-1440.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "3c86151e820eb32b329941ee5b53bb25f198504051ca4249f677a2ac33d59733",
+      "backupRelativePath": "artifacts/light-products-1440.png"
+    },
+    {
+      "formerPath": "artifacts/light-products-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "a997b19a7e06314e0b1ae00295aa84452a92a0d7dea668a7670173617de8ff98",
+      "backupRelativePath": "artifacts/light-products-375.png"
+    },
+    {
+      "formerPath": "artifacts/light-products-768.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "6249a0a6313e8b0f5f9358ac3cce82495217e83b0e53cc574553ffd66c1547cc",
+      "backupRelativePath": "artifacts/light-products-768.png"
+    },
+    {
+      "formerPath": "artifacts/light-profile-1024.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "97da115911d550f1383699fd559b8a4ff14710d15b3afd45f95cefcc50a088e4",
+      "backupRelativePath": "artifacts/light-profile-1024.png"
+    },
+    {
+      "formerPath": "artifacts/light-profile-1440.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "4fb7f5a2613f4c68f2ace218f681d0979ee57ed5abdca093e2d0617cff07e24d",
+      "backupRelativePath": "artifacts/light-profile-1440.png"
+    },
+    {
+      "formerPath": "artifacts/light-profile-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "743fd62af32c6600e3e165ae0997b8718ab51bf18d281faa00052790a049762a",
+      "backupRelativePath": "artifacts/light-profile-375.png"
+    },
+    {
+      "formerPath": "artifacts/light-profile-768.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "0bec6f8e7cb7fbf68533b53176e4038a72d3784a6de088f36994897474592019",
+      "backupRelativePath": "artifacts/light-profile-768.png"
+    },
+    {
+      "formerPath": "artifacts/light-report-dialog-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "3f6ef5ea47fbdef9f5bcef3483baf948176ef58b6d294ce29384c4300532df1e",
+      "backupRelativePath": "artifacts/light-report-dialog-375.png"
+    },
+    {
+      "formerPath": "artifacts/light-seats-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "4a30cabe6897560bdfc39636f1999a395e5a3c05a7eafbe495b300d1dddf754e",
+      "backupRelativePath": "artifacts/light-seats-375.png"
+    },
+    {
+      "formerPath": "artifacts/light-theme-protected-hashes.json",
+      "category": "historical-audit-or-report",
+      "action": "preserved-outside-delivery",
+      "sha256": "3353ad33a26361233d88c2823c241edb4bbf314ad7a0e8b5e9552b4892d46519",
+      "backupRelativePath": "artifacts/light-theme-protected-hashes.json"
+    },
+    {
+      "formerPath": "artifacts/movie-1024.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "b4eae38aac5ef75bf755d511a9522f2ad19fe9ba3fdf8ff411ac3017bd38d143",
+      "backupRelativePath": "artifacts/movie-1024.png"
+    },
+    {
+      "formerPath": "artifacts/movie-1440.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "b2549b2c46e5f3a558423fb2db2f4205f1b391bc7167f0d7e5a896b0f78af398",
+      "backupRelativePath": "artifacts/movie-1440.png"
+    },
+    {
+      "formerPath": "artifacts/movie-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "42cbac8aa3b7b3d34113632d1156a281173c173da316415a2dbe8e17f7e515e0",
+      "backupRelativePath": "artifacts/movie-375.png"
+    },
+    {
+      "formerPath": "artifacts/movie-768.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "1f676433aea02707bcb2d573ad0efc1a627859baf1c74c2b44f493757a1ba0b3",
+      "backupRelativePath": "artifacts/movie-768.png"
+    },
+    {
+      "formerPath": "artifacts/npm-audit.json",
+      "category": "historical-audit-or-report",
+      "action": "preserved-outside-delivery",
+      "sha256": "d7a59ba90ac6dfa57ca9cac679c13c8a82688b3e215fb60e7a6a74fea8219676",
+      "backupRelativePath": "artifacts/npm-audit.json"
+    },
+    {
+      "formerPath": "artifacts/original-customer.zip",
+      "category": "historical-backup",
+      "action": "preserved-outside-delivery",
+      "sha256": "aab941e24a5a6932302ee833302b0a52f4d813a7697f4abc2f94802d6dea0d42",
+      "backupRelativePath": "artifacts/original-customer.zip"
+    },
+    {
+      "formerPath": "artifacts/seats-1024.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "813662e6192220aacdda7ce47e539acd778e9ab00275940e5a375a55a050b2f3",
+      "backupRelativePath": "artifacts/seats-1024.png"
+    },
+    {
+      "formerPath": "artifacts/seats-1440.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "2c5875f48535b1a3780c04747821e214ab0735b637cb43201d247a9cc178bf4b",
+      "backupRelativePath": "artifacts/seats-1440.png"
+    },
+    {
+      "formerPath": "artifacts/seats-375.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "3de60ad23b42ef9a436602b9ff5e4ecc615afa524569a03834a710ab0f5240ed",
+      "backupRelativePath": "artifacts/seats-375.png"
+    },
+    {
+      "formerPath": "artifacts/seats-768.png",
+      "category": "historical-test-screenshot",
+      "action": "preserved-outside-delivery",
+      "sha256": "e268418cd77647309447d6c5758c124c3497856595d5594af3c1da680f934b19",
+      "backupRelativePath": "artifacts/seats-768.png"
+    },
+    {
+      "formerPath": "artifacts/validation-results.json",
+      "category": "historical-audit-or-report",
+      "action": "preserved-outside-delivery",
+      "sha256": "2a1c3ef70a0de1f35176e8cd68926391091235ee70a8d6559d523c122b59b984",
+      "backupRelativePath": "artifacts/validation-results.json"
+    },
+    {
+      "formerPath": "artifacts/mock-dist/.htaccess",
+      "category": "generated-mock-build",
+      "action": "preserved-outside-delivery",
+      "sha256": "bf6ac72d3f72e5d59145692c7d747cc310383764ec24a2e637624b353b1ac8ac",
+      "backupRelativePath": "artifacts/mock-dist/.htaccess"
+    },
+    {
+      "formerPath": "artifacts/mock-dist/index.html",
+      "category": "generated-mock-build",
+      "action": "preserved-outside-delivery",
+      "sha256": "3698e654d2c11b3bfd2523ead5aee5ab06701b866cac3ed832b7e0f85ab0bc89",
+      "backupRelativePath": "artifacts/mock-dist/index.html"
+    },
+    {
+      "formerPath": "artifacts/mock-dist/placeholder-movie.svg",
+      "category": "generated-mock-build",
+      "action": "preserved-outside-delivery",
+      "sha256": "ef8aad26603ec106baafa87bc1b84b939b5977393d35765c9f8fd6574a80b44c",
+      "backupRelativePath": "artifacts/mock-dist/placeholder-movie.svg"
+    },
+    {
+      "formerPath": "artifacts/mock-dist/placeholder-product.svg",
+      "category": "generated-mock-build",
+      "action": "preserved-outside-delivery",
+      "sha256": "9121301f7268461197a896f1482020fa08c39b20a66fa1c9d84a446b5c4a37a2",
+      "backupRelativePath": "artifacts/mock-dist/placeholder-product.svg"
+    },
+    {
+      "formerPath": "artifacts/mock-dist/robots.txt",
+      "category": "generated-mock-build",
+      "action": "preserved-outside-delivery",
+      "sha256": "1f365380bbce798c64f294f36423c22f5acfeb96cf4318d59a9d8aca37dfd889",
+      "backupRelativePath": "artifacts/mock-dist/robots.txt"
+    },
+    {
+      "formerPath": "artifacts/mock-dist/assets/index-2vxRt0pU.css",
+      "category": "generated-mock-build",
+      "action": "preserved-outside-delivery",
+      "sha256": "60171dc8f2dd01cc80d3e90a5c484e8bc496a0da3eb0d256c2eb0f392ff458cd",
+      "backupRelativePath": "artifacts/mock-dist/assets/index-2vxRt0pU.css"
+    },
+    {
+      "formerPath": "artifacts/mock-dist/assets/index-XzM8c-Wx.js",
+      "category": "generated-mock-build",
+      "action": "preserved-outside-delivery",
+      "sha256": "06cc2f664eda2f20b251c04bc1fb91fc99546a569b4c6c36d18e496adf93eb70",
+      "backupRelativePath": "artifacts/mock-dist/assets/index-XzM8c-Wx.js"
+    },
+    {
+      "formerPath": "artifacts/mock-dist/assets/repository-DEAXzp-1.js",
+      "category": "generated-mock-build",
+      "action": "preserved-outside-delivery",
+      "sha256": "41dc3b00d60db30a4c4f3f5c62d670eaaf0d6678fb69976814ba4a47c0f5189b",
+      "backupRelativePath": "artifacts/mock-dist/assets/repository-DEAXzp-1.js"
+    }
+  ]
+}

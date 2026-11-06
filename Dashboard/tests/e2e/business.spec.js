@@ -1,0 +1,33 @@
+import {test,expect} from '@playwright/test';
+async function login(page,role='admin'){
+ await page.goto('/login');await page.getByLabel('Email',{exact:true}).fill(role+'@cinema.test');await page.getByLabel('Mật khẩu',{exact:true}).fill('Demo@12345');await page.getByRole('button',{name:'Đăng nhập',exact:true}).click();await expect(page.locator('header')).toBeVisible();
+}
+async function nav(page,name){await page.getByRole('navigation',{name:'Điều hướng chính'}).getByRole('link',{name,exact:true}).click();}
+async function route(page,path){await page.evaluate(path=>{history.pushState({},'',path);dispatchEvent(new PopStateEvent('popstate'));},path);}
+test('manager scope, removed routes and no breadcrumb',async({page})=>{
+ await login(page,'manager');const menu=page.getByRole('navigation',{name:'Điều hướng chính'});
+ for(const name of ['Chi nhánh','Nội dung website','Liên hệ','Thư viện ảnh'])await expect(menu.getByRole('link',{name,exact:true})).toHaveCount(0);
+ await route(page,'/branches');await expect(page.getByRole('heading',{name:'403',exact:true})).toBeVisible();
+ for(const path of ['/website-content','/contacts']){await route(page,path);await expect(page.getByRole('heading',{name:'403',exact:true})).toBeVisible();}
+ for(const path of ['/media','/comments']){await route(page,path);await expect(page.getByRole('heading',{name:'404',exact:true})).toBeVisible();}
+ await nav(page,'Khách hàng');await expect(page.locator('main h1')).toHaveText('Khách hàng');await expect(page.getByRole('button',{name:'Reset mật khẩu'})).toHaveCount(0);await expect(page.locator('main ol')).toHaveCount(0);
+});
+test('staff confirms pending payment once and statistics refresh',async({page})=>{
+ await login(page,'staff');await nav(page,'Đơn hàng và vé');const row=page.locator('tbody tr').filter({hasText:'#100'});
+ await row.getByRole('button',{name:'Xác nhận',exact:true}).click();const modal=page.getByRole('dialog');await expect(modal).toContainText('#100');await expect(modal).toContainText('160.000');await modal.getByRole('button',{name:'Xác nhận',exact:true}).click();await expect(modal).toHaveCount(0);await expect(row).toContainText('Đã xử lý');await expect(row.getByRole('button',{name:'Xác nhận',exact:true})).toHaveCount(0);await expect(page.locator('select[aria-label^="Trạng thái đơn "]')).toHaveCount(0);
+});
+test('rooms start empty, selection and branch switch clear seats',async({page})=>{
+ await login(page);await nav(page,'Phòng & ghế');await expect(page.getByRole('heading',{name:'Chưa chọn phòng chiếu'})).toBeVisible();await expect(page.getByText('MÀN HÌNH CHÍNH')).toHaveCount(0);await page.getByRole('heading',{name:'Room 1',exact:true}).click();await expect(page.getByText('MÀN HÌNH CHÍNH')).toBeVisible();await page.getByLabel('Chi nhánh phòng chiếu').selectOption('2');await expect(page.getByRole('heading',{name:'Chưa chọn phòng chiếu'})).toBeVisible();await expect(page.getByText('MÀN HÌNH CHÍNH')).toHaveCount(0);
+});
+test('manager creates edits locks activates and deletes staff',async({page})=>{
+ await login(page,'manager');await nav(page,'Nhân viên');await page.getByRole('button',{name:'THÊM NHÂN VIÊN',exact:true}).click();const form=page.getByRole('dialog',{name:'Hồ sơ nhân viên'});
+ await form.getByLabel('Họ và tên khai sinh',{exact:true}).fill('Nhân viên hồi quy');await form.getByLabel('Email công việc',{exact:true}).fill('regression@example.test');await form.getByLabel('Lương cơ bản ($)',{exact:true}).fill('8000000');await form.getByLabel('Mật khẩu',{exact:true}).fill('Demo@12345');await form.getByRole('button',{name:'Thêm nhân viên',exact:true}).click();await expect(form).toHaveCount(0);
+ const row=page.locator('tbody tr').filter({hasText:'regression@example.test'});await expect(row).toContainText('Nhân viên hồi quy');await row.getByRole('button',{name:'Chỉnh sửa',exact:true}).click();await form.getByLabel('Họ và tên khai sinh',{exact:true}).fill('Nhân viên đã sửa');await form.getByRole('button',{name:'Lưu thay đổi',exact:true}).click();await expect(form).toHaveCount(0);await expect(row).toContainText('Nhân viên đã sửa');
+ await row.getByRole('button',{name:'Khóa tài khoản',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'Xác nhận',exact:true}).click();await expect(row).toContainText('Đã nghỉ');await row.getByRole('button',{name:'Kích hoạt',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'Xác nhận',exact:true}).click();await expect(row).toContainText('Đang làm');await row.getByRole('button',{name:'Xóa',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'Xác nhận',exact:true}).click();await expect(row).toHaveCount(0);
+});
+test('voucher cannot reduce released quantity and preserves usage on increase',async({page})=>{
+ await login(page);await nav(page,'Mã giảm giá');await expect(page.getByText('Tỷ lệ sử dụng',{exact:true})).toHaveCount(0);await page.getByRole('button',{name:'Sửa mã 1',exact:true}).click();const form=page.getByRole('dialog');await expect(form.getByLabel('Số lượng còn lại')).not.toHaveRole('spinbutton');await form.getByLabel('Số lượng phát hành').fill('80');await expect(form.getByRole('button',{name:'Cập nhật ngay'})).toBeDisabled();await expect(form.getByText('Số lượng phát hành không được nhỏ hơn số lượng hiện tại.',{exact:true})).toBeVisible();await expect(form.getByLabel('Ngày phát hành')).toHaveCount(0);await expect(form.getByRole('checkbox')).toHaveCount(0);await form.getByLabel('Số lượng phát hành').fill('120');await form.getByRole('button',{name:'Cập nhật ngay'}).click();await expect(form).toHaveCount(0);await expect(page.locator('tbody')).toContainText('16,7%');
+});
+test('report decisions resolve atomically and cannot repeat',async({page})=>{
+ await login(page,'manager');await nav(page,'Báo cáo bình luận và đánh giá');const row=page.locator('tbody tr').first();await row.getByRole('button',{name:'Chi tiết',exact:true}).click();const detail=page.getByRole('dialog');await expect(detail).toContainText('5/5');await expect(detail).toContainText('Không có nội dung văn bản');for(const name of ['Ẩn nội dung vi phạm','Đánh dấu đã xử lý'])await expect(detail.getByRole('button',{name,exact:true})).toHaveCount(0);await detail.getByRole('button',{name:'Bác bỏ báo cáo',exact:true}).click();await page.getByRole('dialog').last().getByRole('button',{name:'Xác nhận',exact:true}).click();await expect(page.getByRole('dialog')).toHaveCount(0);await expect(row).toContainText('Đã xử lý');await row.getByRole('button',{name:'Chi tiết',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('Đã bác bỏ báo cáo');await expect(page.getByRole('dialog').getByRole('button',{name:'Xóa nội dung',exact:true})).toHaveCount(0);
+});
