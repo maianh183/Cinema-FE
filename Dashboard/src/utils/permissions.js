@@ -25,7 +25,8 @@ export function can(user, module, action = 'read') {
       ['cinema-reviews', 'comment-reports'].includes(module))
   )
     return false;
-  if (module === 'customers' && action === 'reset-password') return false;
+  if (module === 'customers' && ['edit-profile', 'reset-password'].includes(action))
+    return user?.role === 'ADMIN' && user.permissions?.includes('customers:' + action) === true;
   if (
     ['website-content', 'contacts'].includes(module) &&
     (user?.role !== 'ADMIN' ||

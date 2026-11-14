@@ -62,7 +62,13 @@
 | **MANAGER** | Quản lý nghiệp vụ, nhân viên và lịch làm việc trong chi nhánh được phân công, theo permission. |
 | **ADMIN** | Quản trị toàn hệ thống theo permission; quản trị chi nhánh, liên hệ và nội dung website. |
 
-Backend xác định chủ thể, chi nhánh và quyền từ phiên; không tin `role`, `branchId`, `userId` hoặc quyền do client tự khai. Dashboard không được chỉnh sửa hồ sơ cá nhân khách hàng; chỉ khóa/mở khóa hoặc xóa tài khoản theo quyền và quy tắc lưu trữ.
+Backend xác định chủ thể, chi nhánh và quyền từ phiên; không tin `role`, `branchId`, `userId` hoặc quyền do client tự khai. Dashboard giữ quyền `customers:update` cho khóa/mở khóa và `customers:delete` cho xóa theo quy tắc lưu trữ. Hai thao tác bổ sung dưới đây chỉ dành cho ADMIN với permission tường minh; không tự suy ra từ role hoặc wildcard.
+
+**Hợp đồng bổ sung chưa xác nhận triển khai PHP:** workspace chỉ có hai frontend. `PATCH /customers/:cUserId/profile` yêu cầu `customers:edit-profile`, chỉ nhận `{cName,phoneNumber,sex}`, trả `{success:true,data:Customer}` đã lưu. `POST /customers/:cUserId/password-reset` yêu cầu `customers:reset-password`, nhận `{}`, chỉ trả `{success:true,data:{requested:true}}` khi máy chủ đã tiếp nhận hợp lệ. Chi tiết validation/response tại [Dashboard mục 3.1](../Dashboard/API_CONTRACT.md#31-quản-lý-tài-khoản-khách-hàng). Không cấp quyền mới trên môi trường thật khi backend chưa hỗ trợ.
+
+Cập nhật hồ sơ dùng đúng bản ghi Customer chung; `/auth/me` của Customer đọc lại dữ liệu mới. Không cho đổi email, ID, role, permissions, mật khẩu, điểm/hạng hoặc đơn/vé/thanh toán; `birthday` chưa có schema ghi được xác nhận. Backend phải từ chối trường ngoài allowlist và áp dụng trạng thái khóa cho xác thực/phiên/nghiệp vụ, không thay đổi chủ sở hữu hay lịch sử giao dịch.
+
+Reset do ADMIN yêu cầu phải dùng chung dịch vụ token của `/auth/forgot-password` và `/auth/reset-password`, gửi tới email đã xác minh lấy từ backend, không dùng mật khẩu cố định. Token ngẫu nhiên có hạn, lưu hash, dùng một lần và tiêu thụ nguyên tử; không trả token/hash về Dashboard. Backend phải có rate limiting (`429`, `Retry-After`), audit không chứa bí mật và kiểm tra trạng thái tài khoản. Client chờ tối thiểu 60 giây chỉ là hỗ trợ UX. Mock Mode không gửi email/token; API Mode không có fallback giả thành công. Luồng Customer và cờ `VITE_PASSWORD_RECOVERY` giữ nguyên, chỉ bật sau khi backend xác nhận hỗ trợ.
 
 ## 4. API công khai — Customer
 

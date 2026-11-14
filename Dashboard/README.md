@@ -16,12 +16,14 @@ Giao diện quản trị hệ thống rạp chiếu phim dành cho **ADMIN**, **
 | Quản lý rạp | Phim, danh mục phim, suất chiếu, chi nhánh, phòng và sơ đồ ghế |
 | Kinh doanh | Bán vé tại quầy (POS), đơn hàng, xác nhận/hủy đơn, sản phẩm và voucher |
 | Nhân sự | Nhân viên, phân quyền và lịch làm việc dạng lịch ngày/tuần/tháng |
-| Khách hàng | Xem tài khoản, khóa/mở khóa và quản lý theo quyền |
+| Khách hàng | Xem, khóa/mở khóa, xóa theo quyền; ADMIN có quyền riêng được sửa hồ sơ và yêu cầu khôi phục mật khẩu |
 | Nội dung | FAQ, tin tức, đánh giá rạp và xử lý báo cáo bình luận/đánh giá |
 | Website | Quản lý liên hệ khách hàng và nội dung các trang công khai |
 | Thống kê | Doanh thu, đơn hàng, suất chiếu và hiệu suất hoạt động |
 
 **Phân quyền:** ADMIN quản trị toàn hệ thống; MANAGER quản lý nghiệp vụ và nhân sự trong chi nhánh được phân công; STAFF thao tác nghiệp vụ được cấp quyền và chỉ xem lịch làm việc cá nhân. Quyền truy cập và phạm vi dữ liệu được kiểm tra từ phiên đăng nhập và permission do API cấp.
+
+Chỉnh sửa hồ sơ/yêu cầu khôi phục mật khẩu khách hàng cần lần lượt `customers:edit-profile` và `customers:reset-password` được server cấp tường minh cho ADMIN. Hai endpoint mới chưa được xác nhận triển khai PHP; xem [API Contract, mục 3.1](API_CONTRACT.md#31-quản-lý-tài-khoản-khách-hàng). Mock Mode chỉ mô phỏng, không gửi email hoặc tạo token. Customer giữ nguyên luồng khôi phục hiện có.
 
 ## Cài đặt và chạy
 
@@ -66,6 +68,8 @@ npm run test:http
 ```
 
 Các lệnh trên lần lượt kiểm tra mã JavaScript/JSX, lint, unit tests, giao diện E2E và HTTP tests. Kiểm thử giao diện dùng Microsoft Edge; cần bảo đảm các cổng phục vụ test không bị chiếm dụng.
+
+Kiểm thử đồng bộ hồ sơ giữa hai frontend: `npx playwright test -c playwright.customer-account.config.js` (cổng 3004 và 5176, cần cài dependencies của cả hai dự án). Test dùng API fixture chung; không thay thế kiểm thử tích hợp với backend PHP thật.
 
 ## Cấu trúc dự án
 

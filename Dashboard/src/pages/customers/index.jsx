@@ -9,6 +9,7 @@ import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { ErrorState, LoadingState, EmptyState } from '@/components/ui/Feedback';
 import Pagination from '@/components/tables/Pagination';
 import { usePagination } from '@/hooks/usePagination';
+import { CustomerProfileModal, CustomerPasswordResetModal } from './AccountActions';
 export default function Customers() {
   const user = useAuthStore((s) => s.user);
   const [rows, setRows] = useState([]),
@@ -19,7 +20,17 @@ export default function Customers() {
     [error, setError] = useState(''),
     [revision, setRevision] = useState(0),
     [selected, setSelected] = useState(null),
-    [confirm, setConfirm] = useState(null);
+    [confirm, setConfirm] = useState(null),
+    [editing, setEditing] = useState(null),
+    [resetting, setResetting] = useState(null);
+  function profileSaved(profile) {
+    setRows((current) =>
+      current.map((row) => (row.cUserId === profile.cUserId ? { ...row, ...profile } : row)),
+    );
+    setSelected((current) =>
+      current?.cUserId === profile.cUserId ? { ...current, ...profile } : current,
+    );
+  }
   useEffect(() => {
     let active = true;
     setLoading(true);
@@ -120,6 +131,16 @@ export default function Customers() {
                         <button className="btn-secondary" onClick={() => setSelected(row)}>
                           Chi tiết
                         </button>
+                        {can(user, 'customers', 'edit-profile') && (
+                          <button className="btn-secondary" onClick={() => setEditing(row)}>
+                            Chỉnh sửa
+                          </button>
+                        )}
+                        {can(user, 'customers', 'reset-password') && (
+                          <button className="btn-secondary" onClick={() => setResetting(row)}>
+                            Đặt lại mật khẩu
+                          </button>
+                        )}
                         {can(user, 'customers', 'update') && (
                           <button
                             className="btn-secondary"
@@ -150,7 +171,7 @@ export default function Customers() {
         open={!!selected}
         onClose={() => setSelected(null)}
         title="Hồ sơ khách hàng"
-        description="Thông tin chỉ xem. Khách hàng tự cập nhật hồ sơ trên ứng dụng dành cho khách hàng."
+        description="Thông tin tài khoản khách hàng. Các thao tác quản trị phụ thuộc quyền được cấp."
       >
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {selected &&
@@ -160,6 +181,8 @@ export default function Customers() {
               ['Điện thoại', selected.phoneNumber],
               ['Giới tính', { M: 'Nam', F: 'Nữ' }[selected.sex]],
               ['Mã khách hàng', selected.cUserId],
+              ['Ngày tạo tài khoản', selected.createdAt],
+              ['Ngày sinh', selected.birthday],
               ['Hạng thành viên', selected.membershipTier],
               [
                 'Điểm tích lũy',
@@ -173,7 +196,27 @@ export default function Customers() {
               </div>
             ))}
         </dl>
+        {selected && can(user, 'customers', 'edit-profile') && (
+          <button className="btn-secondary mt-4" onClick={() => setEditing(selected)}>
+            Chỉnh sửa
+          </button>
+        )}
       </FormModal>
+      {editing && (
+        <CustomerProfileModal
+          key={editing.cUserId}
+          row={editing}
+          onClose={() => setEditing(null)}
+          onSaved={profileSaved}
+        />
+      )}
+      {resetting && (
+        <CustomerPasswordResetModal
+          key={resetting.cUserId}
+          row={resetting}
+          onClose={() => setResetting(null)}
+        />
+      )}
       <ConfirmModal
         isOpen={!!confirm}
         onClose={() => setConfirm(null)}

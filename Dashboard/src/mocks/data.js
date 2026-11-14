@@ -3,7 +3,7 @@ import { expandData } from './expandData';
 import { todayVN } from '../utils/calendar';
 // Development fixtures only. No production fallback, no real customer information.
 export const mockPermissions = {
-  ADMIN: ['*'],
+  ADMIN: ['*', 'customers:edit-profile', 'customers:reset-password'],
   MANAGER: [
     'dashboard:read',
     'movies:*',
@@ -151,6 +151,7 @@ export function makeData(anchor = todayVN()) {
         cUserId: 'KH' + String(i + 1).padStart(3, '0'),
         cName: 'Khách hàng Demo ' + (i + 1),
         email: 'customer' + (i + 1) + '@example.test',
+        emailVerified: true,
         phoneNumber: '090100' + String(i).padStart(4, '0'),
         sex: 'F',
         userType: 'CUSTOMER',

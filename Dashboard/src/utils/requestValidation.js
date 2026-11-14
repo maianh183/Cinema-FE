@@ -1,6 +1,28 @@
 import { businessTime } from './business';
+import { validateCustomerProfile } from './customerAccount';
 // Client-side checks complement (never replace) PHP validation.
 export function validateMutation(url, method, data) {
+  if (
+    /^\/customers\/[^/]+\/profile$/.test(url.split('?')[0]) &&
+    ['post', 'put', 'patch'].includes(method)
+  ) {
+    if (method !== 'patch')
+      throw new Error('Hồ sơ khách hàng chỉ được cập nhật qua PATCH profile.');
+    validateCustomerProfile(data);
+  }
+  if (
+    /^\/customers\/[^/]+\/password-reset$/.test(url.split('?')[0]) &&
+    ['post', 'put', 'patch'].includes(method)
+  ) {
+    if (
+      method !== 'post' ||
+      !data ||
+      Array.isArray(data) ||
+      typeof data !== 'object' ||
+      Object.keys(data).length
+    )
+      throw new Error('Yêu cầu đặt lại mật khẩu chỉ nhận body rỗng.');
+  }
   if (['post', 'put', 'patch'].includes(method) && /^\/customers\/[^/]+$/.test(url.split('?')[0]))
     throw new Error('Chỉ khách hàng được thay đổi thông tin cá nhân của mình.');
   if (

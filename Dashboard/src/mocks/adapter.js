@@ -1,4 +1,5 @@
 import { editorialApi } from './siteContent';
+import { customerAccountApi } from './customerAccounts';
 import { orderDraft } from './orderDraft';
 import { orderBlocksSeat } from '../utils/apiContract';
 import { statistics } from './statistics';
@@ -120,6 +121,18 @@ export async function mockAdapter(config) {
   });
   if (editorialResult) return editorialResult;
   if (!session) fail(401, 'Phiên đăng nhập đã hết hạn.');
+  const accountResult = customerAccountApi({
+    db,
+    session,
+    resource,
+    id,
+    parts,
+    method,
+    body,
+    ok,
+    fail,
+  });
+  if (accountResult) return accountResult;
   if (
     resource === 'customers' &&
     id &&
@@ -180,7 +193,12 @@ export async function mockAdapter(config) {
               : module === 'cinema-reviews'
                 ? ['read']
                 : module === 'customers'
-                  ? ['read', 'update', 'delete']
+                  ? [
+                      'read',
+                      'update',
+                      'delete',
+                      ...(session.role === 'ADMIN' ? ['edit-profile', 'reset-password'] : []),
+                    ]
                   : [
                       'read',
                       'create',

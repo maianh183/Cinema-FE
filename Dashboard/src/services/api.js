@@ -35,6 +35,11 @@ async function ensureCsrf(version) {
 const pendingMutations = new Set();
 export function normalizeResponse(response) {
   const body = response.data;
+  if (response.config?.requireSuccessEnvelope && (body?.success !== true || !body.data)) {
+    const error = new Error('Phản hồi máy chủ chưa xác nhận thành công.');
+    error.response = { ...response, status: 502 };
+    throw error;
+  }
   if (body && typeof body === 'object' && body.success === false) {
     const error = new Error(body.message || 'Yêu cầu thất bại.');
     error.response = { ...response, status: body.status || 422 };

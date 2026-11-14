@@ -59,7 +59,23 @@ Phiên CUSTOMER không được truy cập Dashboard. Backend xác định `bran
 - Ghế `sType=1` là thường, `sType=2` là VIP; `sStatus` thể hiện khả năng sử dụng. `isBooked` phụ thuộc **suất chiếu**, không phải trạng thái chung của ghế vật lý. Lưu sơ đồ ghế hàng loạt phải nguyên tử và không làm hỏng ghế đã có vé/đang giữ.
 - Sản phẩm có trạng thái theo ngày bán và tồn kho: `PREACTIVE`, `ACTIVE`, `OUT_OF_STOCK`, `EXPIRED` (dữ liệu thiếu/sai được xử lý riêng). Giá và tồn kho do backend xác thực khi tạo đơn.
 - Voucher dùng `startDate/endDate`, tự xác định `PREACTIVE`, `ACTIVE`, `EXPIRED`; không dùng `isActive` hay `releaseDate`. `releaseNum` chỉ được tăng hoặc giữ nguyên; `availNum` do server tính, không gửi khi sửa. Khi tăng lượng phát hành, số đã dùng phải được bảo toàn. `maxDiscount=0` nghĩa là không giới hạn mức giảm tối đa.
-- Dashboard **không sửa hồ sơ cá nhân khách hàng**; `customers:update` chỉ dùng cho khóa/mở khóa tài khoản. Xóa khách hàng phải tôn trọng lịch sử giao dịch. MANAGER chỉ có thể quản lý STAFF trong chi nhánh của mình, không nâng quyền vượt phạm vi được cấp.
+- `customers:update` chỉ dùng cho khóa/mở khóa tài khoản; chỉnh sửa hồ sơ và yêu cầu khôi phục mật khẩu dùng quyền riêng tại mục 3.1. Xóa khách hàng phải tôn trọng lịch sử giao dịch. MANAGER chỉ có thể quản lý STAFF trong chi nhánh của mình, không nâng quyền vượt phạm vi được cấp.
+
+### 3.1. Quản lý tài khoản khách hàng
+
+**Trạng thái:** Frontend đã tích hợp; workspace không có backend PHP để xác nhận hai endpoint dưới đây đã được triển khai. Đây là hợp đồng cần backend bổ sung, không phải xác nhận khả năng API hiện tại. Không cấp permission tương ứng trong môi trường thật trước khi backend sẵn sàng. Mock Mode chỉ mô phỏng, không gửi email hoặc tạo token.
+
+| Method | Endpoint | Permission và request / response |
+|---|---|---|
+| PATCH | `/customers/:cUserId/profile` | ADMIN có `customers:edit-profile`; `{cName,phoneNumber,sex}` → `{success:true,data:Customer}` đã lưu. |
+| POST | `/customers/:cUserId/password-reset` | ADMIN có `customers:reset-password`; `{}` → `{success:true,data:{requested:true}}` sau khi máy chủ tiếp nhận hợp lệ. |
+
+- Hai permission mới phải xuất hiện tường minh trong danh sách do server cấp; frontend không suy ra từ role ADMIN, `*`, `customers:*` hoặc `customers:update`. `customers:read`, `customers:update`, `customers:delete` giữ ý nghĩa cũ. UI và service kiểm tra quyền; backend bắt buộc kiểm tra lại từ phiên, không tin body/header tự khai.
+- Hồ sơ chỉ nhận ba trường trên: `cName` sau trim dài 1–100, `phoneNumber` 8–15 chữ số và tùy chọn dấu `+`, `sex=M|F`. Từ chối mọi khóa ngoài allowlist (`email`, ID, role, permissions, password, điểm/hạng, dữ liệu giao dịch...). `birthday` chưa được schema PHP xác nhận nên chỉ đọc nếu có trong response.
+- Response hồ sơ phải xác nhận đúng `cUserId`, gồm `cName,phoneNumber,sex,email` và các trường hiển thị được phép (`isActive,membershipTier,totalPoints,createdAt,updatedAt,birthday`). Không trả password/hash, token hoặc audit nội bộ. Cập nhật đúng bản ghi Customer chung; lần đọc `/auth/me` tiếp theo của Customer phải phản ánh hồ sơ mới, không đổi email, chủ sở hữu hoặc lịch sử đơn/vé/thanh toán.
+- Reset dùng **cùng dịch vụ khôi phục hiện có** với `/auth/forgot-password`, `/auth/reset-password` và trang Customer `/reset-password?token=...`. Backend chọn email đã xác minh từ bản ghi, không lấy email hay mật khẩu từ body. Token ngẫu nhiên dùng một lần, có hạn, lưu hash; tiêu thụ nguyên tử và vô hiệu hóa sau sử dụng. Không tạo hệ thống token thứ hai; không trả token về Dashboard và không đổi mật khẩu khi mới gửi yêu cầu. Chỉ bật `VITE_PASSWORD_RECOVERY=true` ở Customer sau khi luồng này hoạt động.
+- Backend cần rate limiting theo người thao tác/tài khoản đích/IP, `429` kèm `Retry-After`, audit actor/target/action/time/result không chứa bí mật, kiểm tra trạng thái khóa/email xác minh (`409` nếu không đủ điều kiện) và xác nhận hàng đợi gửi thư đã tiếp nhận trước `requested:true`. Client chặn request đồng thời và chờ tối thiểu 60 giây giữa các lần gửi, tôn trọng `Retry-After`; đây không thay thế giới hạn phía server.
+- `400/422`: request/validation; `401`: hết phiên; `403`: thiếu quyền; `404`: không có tài khoản/endpoint; `409`: xung đột; `429`: giới hạn tần suất; `500/network`: lỗi máy chủ/kết nối. Form giữ bản nháp khi lỗi hoặc response không hợp lệ; không báo thành công khi thiếu xác nhận. Tài khoản bị khóa phải bị backend chặn cả phiên đang tồn tại và các nghiệp vụ yêu cầu xác thực; yêu cầu reset không tự mở khóa.
 
 ## 4. Đơn hàng và thanh toán tại quầy
 
