@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { authService, checkoutService } from "../services/customer.js";
-import { RECOVERY_ENABLED, USE_MOCK } from "../services/api.js";
-import { useUserStore } from "../store/userStore.js";
-import { money, dateTime, todayVN, safeUrl } from "../lib/business.js";
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { authService, checkoutService } from '../services/customer.js';
+import { RECOVERY_ENABLED, USE_MOCK } from '../services/api.js';
+import { useUserStore } from '../store/userStore.js';
+import { money, dateTime, todayVN, safeUrl } from '../lib/business.js';
 import {
   Page,
   State,
@@ -14,7 +14,7 @@ import {
   Metadata,
   useResource,
   useMutation,
-} from "../components/shared/UI.jsx";
+} from '../components/shared/UI.jsx';
 export function AuthPage({ register = false }) {
   const action = useMutation(),
     navigate = useNavigate(),
@@ -28,23 +28,20 @@ export function AuthPage({ register = false }) {
       if (register) {
         values.fullName = values.fullName.trim();
         if (!values.fullName || values.password !== values.confirm)
-          throw Error("Họ tên hoặc mật khẩu xác nhận chưa hợp lệ.");
+          throw Error('Họ tên hoặc mật khẩu xác nhận chưa hợp lệ.');
         delete values.confirm;
       }
-      const user = await (register
-        ? authService.register(values)
-        : authService.login(values));
+      const user = await (register ? authService.register(values) : authService.login(values));
       setUser(user);
-      const dest = params.get("next");
-      navigate(
-        dest?.startsWith("/") && !dest.startsWith("//") ? dest : "/profile",
-        { replace: true },
-      );
+      const dest = params.get('next');
+      navigate(dest?.startsWith('/') && !dest.startsWith('//') ? dest : '/profile', {
+        replace: true,
+      });
     });
   }
   return (
-    <Page title={register ? "Tạo tài khoản" : "Chào mừng trở lại"}>
-      <Metadata title={register ? "Đăng ký" : "Đăng nhập"} />
+    <Page title={register ? 'Tạo tài khoản' : 'Chào mừng trở lại'}>
+      <Metadata title={register ? 'Đăng ký' : 'Đăng nhập'} />
       <form className="panel form-width" onSubmit={submit}>
         {USE_MOCK && (
           <p className="notice">
@@ -55,13 +52,7 @@ export function AuthPage({ register = false }) {
         )}
         {register && (
           <>
-            <Field
-              label="Họ tên"
-              name="fullName"
-              required
-              maxLength={100}
-              autoComplete="name"
-            />
+            <Field label="Họ tên" name="fullName" required maxLength={100} autoComplete="name" />
             <Field
               label="Số điện thoại"
               name="phone"
@@ -69,13 +60,7 @@ export function AuthPage({ register = false }) {
               type="tel"
               pattern="[+]?[0-9]{8,15}"
             />
-            <Field
-              label="Ngày sinh"
-              name="dob"
-              type="date"
-              required
-              max={todayVN()}
-            />
+            <Field label="Ngày sinh" name="dob" type="date" required max={todayVN()} />
             <Field label="Giới tính">
               <select name="gender">
                 <option value="F">Nữ</option>
@@ -99,7 +84,7 @@ export function AuthPage({ register = false }) {
           required
           minLength={register ? 10 : 1}
           maxLength={128}
-          autoComplete={register ? "new-password" : "current-password"}
+          autoComplete={register ? 'new-password' : 'current-password'}
         />
         {register && (
           <Field
@@ -114,13 +99,11 @@ export function AuthPage({ register = false }) {
         )}
         <Feedback action={action} />
         <button className="btn" disabled={action.busy}>
-          {action.busy ? "Đang xử lý…" : register ? "Đăng ký" : "Đăng nhập"}
+          {action.busy ? 'Đang xử lý…' : register ? 'Đăng ký' : 'Đăng nhập'}
         </button>
         <p>
-          <Link to={register ? "/login" : "/register"} className="text-button">
-            {register
-              ? "Đã có tài khoản? Đăng nhập"
-              : "Chưa có tài khoản? Đăng ký"}
+          <Link to={register ? '/login' : '/register'} className="text-button">
+            {register ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký'}
           </Link>
         </p>
         {RECOVERY_ENABLED && !register && (
@@ -140,28 +123,23 @@ export function RecoveryPage({ reset = false }) {
     const values = Object.fromEntries(new FormData(e.currentTarget));
     await action.run(async (notify) => {
       if (reset) {
-        if (values.password !== values.confirm)
-          throw Error("Mật khẩu xác nhận không khớp.");
+        if (values.password !== values.confirm) throw Error('Mật khẩu xác nhận không khớp.');
         await authService.reset({
-          token: params.get("token"),
+          token: params.get('token'),
           newPassword: values.password,
         });
-        notify("Mật khẩu đã được cập nhật. Vui lòng đăng nhập.");
+        notify('Mật khẩu đã được cập nhật. Vui lòng đăng nhập.');
       } else {
         const result = await authService.forgot(values.email.trim());
-        notify(
-          result.message ||
-            "Nếu email hợp lệ, hướng dẫn khôi phục sẽ được gửi đến bạn.",
-        );
+        notify(result.message || 'Nếu email hợp lệ, hướng dẫn khôi phục sẽ được gửi đến bạn.');
       }
     });
   }
   return (
-    <Page title={reset ? "Đặt lại mật khẩu" : "Khôi phục tài khoản"}>
+    <Page title={reset ? 'Đặt lại mật khẩu' : 'Khôi phục tài khoản'}>
       {!RECOVERY_ENABLED ? (
         <Empty>
-          Chức năng khôi phục chưa được hỗ trợ.{" "}
-          <Link to="/contact">Liên hệ hỗ trợ</Link>.
+          Chức năng khôi phục chưa được hỗ trợ. <Link to="/contact">Liên hệ hỗ trợ</Link>.
         </Empty>
       ) : (
         <form className="panel form-width" onSubmit={submit}>
@@ -188,10 +166,7 @@ export function RecoveryPage({ reset = false }) {
             <Field label="Email" name="email" type="email" required />
           )}
           <Feedback action={action} />
-          <button
-            className="btn"
-            disabled={action.busy || (reset && !params.get("token"))}
-          >
+          <button className="btn" disabled={action.busy || (reset && !params.get('token'))}>
             Gửi yêu cầu
           </button>
         </form>
@@ -212,9 +187,9 @@ export function ProfilePage() {
     const data = Object.fromEntries(new FormData(e.currentTarget));
     await action.run(async (notify) => {
       data.fullName = data.fullName.trim();
-      if (!data.fullName) throw Error("Họ tên không được trống.");
+      if (!data.fullName) throw Error('Họ tên không được trống.');
       setUser(await authService.profile(data));
-      notify("Đã lưu hồ sơ.");
+      notify('Đã lưu hồ sơ.');
     });
   }
   return (
@@ -248,7 +223,7 @@ export function ProfilePage() {
             required
           />
           <Field label="Giới tính">
-            <select name="gender" defaultValue={user.gender || "F"}>
+            <select name="gender" defaultValue={user.gender || 'F'}>
               <option value="F">Nữ</option>
               <option value="M">Nam</option>
             </select>
@@ -266,14 +241,13 @@ export function ProfilePage() {
               const form = e.currentTarget,
                 data = Object.fromEntries(new FormData(form));
               passwordAction.run(async (notify) => {
-                if (data.newPassword !== data.confirm)
-                  throw Error("Mật khẩu xác nhận không khớp.");
+                if (data.newPassword !== data.confirm) throw Error('Mật khẩu xác nhận không khớp.');
                 await authService.password({
                   oldPassword: data.oldPassword,
                   newPassword: data.newPassword,
                 });
                 form.reset();
-                notify("Đã đổi mật khẩu.");
+                notify('Đã đổi mật khẩu.');
               });
             }}
           >
@@ -311,11 +285,7 @@ export function ProfilePage() {
           <div className="panel">
             <h2>Ảnh đại diện</h2>
             {user.avatarUrl && (
-              <img
-                className="avatar large"
-                alt="Ảnh đại diện của bạn"
-                src={user.avatarUrl}
-              />
+              <img className="avatar large" alt="Ảnh đại diện của bạn" src={user.avatarUrl} />
             )}
             <Field
               label="Chọn ảnh JPG, PNG hoặc WebP (tối đa 5 MB)"
@@ -327,10 +297,9 @@ export function ProfilePage() {
                 if (file)
                   avatarAction.run(async (notify) => {
                     const result = await authService.avatar(file);
-                    if (!result.avatarUrl)
-                      throw Error("Máy chủ chưa xác nhận ảnh.");
+                    if (!result.avatarUrl) throw Error('Máy chủ chưa xác nhận ảnh.');
                     setUser(result);
-                    notify("Đã cập nhật ảnh đại diện.");
+                    notify('Đã cập nhật ảnh đại diện.');
                   });
               }}
             />
@@ -348,7 +317,7 @@ export function ProfilePage() {
           onClick={() =>
             action.run(async () => {
               await logout();
-              navigate("/login");
+              navigate('/login');
             })
           }
         >
@@ -359,13 +328,13 @@ export function ProfilePage() {
   );
 }
 const statusLabels = {
-  PAID: "Đã thanh toán",
-  PENDING: "Đơn tại quầy chưa thanh toán",
-  AWAITING_PAYMENT: "Chờ thanh toán trực tuyến",
-  CANCELLED: "Đã hủy",
-  FAILED: "Thanh toán thất bại",
-  EXPIRED: "Đã hết hạn",
-  REFUNDED: "Đã hoàn tiền",
+  PAID: 'Đã thanh toán',
+  PENDING: 'Đơn tại quầy chưa thanh toán',
+  AWAITING_PAYMENT: 'Chờ thanh toán trực tuyến',
+  CANCELLED: 'Đã hủy',
+  FAILED: 'Thanh toán thất bại',
+  EXPIRED: 'Đã hết hạn',
+  REFUNDED: 'Đã hoàn tiền',
 };
 export function HistoryPage() {
   const resource = useResource(async () => {
@@ -394,8 +363,8 @@ export function HistoryPage() {
             </p>
             {o.ticketDetails?.map((t, i) => (
               <p key={i}>
-                {t.movieName} · {t.branchName} · Phòng {t.roomId} · {t.seatName}{" "}
-                · {dateTime(t.showtime)}
+                {t.movieName} · {t.branchName} · Phòng {t.roomId} · {t.seatName} ·{' '}
+                {dateTime(t.showtime)}
               </p>
             ))}
             {o.addonDetails?.map((a, i) => (
@@ -403,10 +372,7 @@ export function HistoryPage() {
                 {a.pName || a.productName} × {a.quantity}
               </p>
             ))}
-            <Link
-              to={`/checkout/status?orderId=${o.orderId}`}
-              className="text-button"
-            >
+            <Link to={`/checkout/status?orderId=${o.orderId}`} className="text-button">
               Xem trạng thái
             </Link>
           </article>
@@ -429,19 +395,16 @@ export function HistoryPage() {
             </p>
           </article>
         ))}
-        {!resource.data?.payments.length && (
-          <Empty>Chưa có giao dịch thanh toán.</Empty>
-        )}
+        {!resource.data?.payments.length && <Empty>Chưa có giao dịch thanh toán.</Empty>}
       </State>
     </Page>
   );
 }
 export function PaymentStatusPage() {
   const [params] = useSearchParams(),
-    orderId = params.get("orderId"),
+    orderId = params.get('orderId'),
     resource = useResource(() => {
-      if (!/^\d+$/.test(orderId || ""))
-        throw Error("Thiếu mã đơn hàng hợp lệ.");
+      if (!/^\d+$/.test(orderId || '')) throw Error('Thiếu mã đơn hàng hợp lệ.');
       return checkoutService.order(orderId);
     }, orderId),
     action = useMutation();
@@ -449,9 +412,7 @@ export function PaymentStatusPage() {
     if (
       !orderId ||
       resource.error ||
-      ["PAID", "FAILED", "EXPIRED", "CANCELLED", "REFUNDED"].includes(
-        resource.data?.orderStatus,
-      )
+      ['PAID', 'FAILED', 'EXPIRED', 'CANCELLED', 'REFUNDED'].includes(resource.data?.orderStatus)
     )
       return;
     const timer = setInterval(resource.reload, 5000);
@@ -466,22 +427,19 @@ export function PaymentStatusPage() {
           <div className="panel">
             <p className="eyebrow">Đơn #{order.orderId}</p>
             <h2 className="payment-status" data-status={order.orderStatus}>
-              {order.orderStatus === "PAID"
-                ? "Thanh toán thành công"
-                : statusLabels[order.orderStatus] || "Chưa xác nhận thanh toán"}
+              {order.orderStatus === 'PAID'
+                ? 'Thanh toán thành công'
+                : statusLabels[order.orderStatus] || 'Chưa xác nhận thanh toán'}
             </h2>
             <p>Tổng tiền: {money(order.total)}</p>
-            {order.orderStatus !== "PAID" && (
-              <p>Đơn chưa được xác nhận thanh toán thành công.</p>
-            )}
+            {order.orderStatus !== 'PAID' && <p>Đơn chưa được xác nhận thanh toán thành công.</p>}
             {USE_MOCK && (
               <p className="notice">
-                Demo không thực hiện thanh toán thật. Đơn mới không tự chuyển
-                thành PAID.
+                Demo không thực hiện thanh toán thật. Đơn mới không tự chuyển thành PAID.
               </p>
             )}
             <Feedback action={action} />
-            {order.orderStatus === "AWAITING_PAYMENT" && !USE_MOCK && (
+            {order.orderStatus === 'AWAITING_PAYMENT' && !USE_MOCK && (
               <button
                 className="btn"
                 disabled={action.busy}
@@ -489,8 +447,8 @@ export function PaymentStatusPage() {
                   action.run(async () => {
                     const result = await checkoutService.payment(order.orderId),
                       url = safeUrl(result.paymentUrl);
-                    if (!url.startsWith("https://"))
-                      throw Error("Chưa có liên kết thanh toán hợp lệ.");
+                    if (!url.startsWith('https://'))
+                      throw Error('Chưa có liên kết thanh toán hợp lệ.');
                     window.location.assign(url);
                   })
                 }

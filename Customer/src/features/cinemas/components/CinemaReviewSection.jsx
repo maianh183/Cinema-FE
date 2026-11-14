@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { cinemaReviewService } from "../../../services/customer.js";
-import { useUserStore } from "../../../store/userStore.js";
-import { dateTime } from "../../../lib/business.js";
+import { useState } from 'react';
+import { cinemaReviewService } from '../../../services/customer.js';
+import { useUserStore } from '../../../store/userStore.js';
+import { dateTime } from '../../../lib/business.js';
 import {
   State,
   Empty,
@@ -11,19 +11,16 @@ import {
   LoginPrompt,
   useMutation,
   useResource,
-} from "../../../components/shared/UI.jsx";
-import ReportContentDialog from "../../../components/shared/ReportContentDialog.jsx";
+} from '../../../components/shared/UI.jsx';
+import ReportContentDialog from '../../../components/shared/ReportContentDialog.jsx';
 export default function CinemaReviewSection({ branch, rooms }) {
   const user = useUserStore((s) => s.user),
-    [content, setContent] = useState(""),
-    [roomId, setRoomId] = useState(""),
+    [content, setContent] = useState(''),
+    [roomId, setRoomId] = useState(''),
     [page, setPage] = useState(1),
     [report, setReport] = useState(null);
   const action = useMutation(),
-    resource = useResource(
-      () => cinemaReviewService.list(branch.branchId),
-      branch.branchId,
-    ),
+    resource = useResource(() => cinemaReviewService.list(branch.branchId), branch.branchId),
     rows = resource.data || [];
   async function submit(e) {
     e.preventDefault();
@@ -37,11 +34,11 @@ export default function CinemaReviewSection({ branch, rooms }) {
         rooms,
       );
       if (!result.reviewId || result.branchId !== branch.branchId)
-        throw Error("Máy chủ chưa xác nhận đánh giá.");
-      setContent("");
+        throw Error('Máy chủ chưa xác nhận đánh giá.');
+      setContent('');
       setPage(1);
       resource.reload();
-      notify("Đã gửi đánh giá cơ sở.");
+      notify('Đã gửi đánh giá cơ sở.');
     });
   }
   return (
@@ -70,7 +67,7 @@ export default function CinemaReviewSection({ branch, rooms }) {
           </Field>
           <Feedback action={action} />
           <button className="btn" disabled={action.busy || !content.trim()}>
-            {action.busy ? "Đang gửi…" : "Gửi đánh giá"}
+            {action.busy ? 'Đang gửi…' : 'Gửi đánh giá'}
           </button>
         </form>
       ) : (
@@ -83,9 +80,7 @@ export default function CinemaReviewSection({ branch, rooms }) {
           rows.slice((page - 1) * 5, page * 5).map((row) => (
             <article className="review" key={row.reviewId}>
               <h3>{row.authorName}</h3>
-              {row.roomId != null && (
-                <p className="muted">Phòng {row.roomId}</p>
-              )}
+              {row.roomId != null && <p className="muted">Phòng {row.roomId}</p>}
               <p className="plain-text">{row.content}</p>
               <small>{dateTime(row.createdAt)}</small>
               {user && (
@@ -96,12 +91,7 @@ export default function CinemaReviewSection({ branch, rooms }) {
             </article>
           ))
         )}
-        <Pagination
-          page={page}
-          setPage={setPage}
-          total={rows.length}
-          pageSize={5}
-        />
+        <Pagination page={page} setPage={setPage} total={rows.length} pageSize={5} />
       </State>
       {report && (
         <ReportContentDialog

@@ -1,22 +1,18 @@
-import { Ticket } from "lucide-react";
-import React, { useState } from "react";
-import { Modal } from "../../../components/shared/UI.jsx";
+import { Ticket } from 'lucide-react';
+import React, { useState } from 'react';
+import { Modal } from '../../../components/shared/UI.jsx';
 export default function MovieHeroSection({ movie }) {
   const [showTrailer, setShowTrailer] = useState(false);
   const getEmbedUrl = (url) => {
     try {
       const u = new URL(url);
-      if (!["www.youtube.com", "youtube.com", "youtu.be"].includes(u.hostname))
-        return "";
-      const id =
-        u.hostname === "youtu.be"
-          ? u.pathname.slice(1)
-          : u.searchParams.get("v");
-      return /^[a-zA-Z0-9_-]{11}$/.test(id || "")
+      if (!['www.youtube.com', 'youtube.com', 'youtu.be'].includes(u.hostname)) return '';
+      const id = u.hostname === 'youtu.be' ? u.pathname.slice(1) : u.searchParams.get('v');
+      return /^[a-zA-Z0-9_-]{11}$/.test(id || '')
         ? `https://www.youtube-nocookie.com/embed/${id}`
-        : "";
+        : '';
     } catch {
-      return "";
+      return '';
     }
   };
   return (
@@ -25,7 +21,7 @@ export default function MovieHeroSection({ movie }) {
         <img
           alt={movie.mName}
           className="hero-backdrop"
-          src={movie.posterUrl || "/placeholder-movie.svg"}
+          src={movie.posterUrl || '/placeholder-movie.svg'}
         />
         <div className="hero-wash" />
       </div>
@@ -37,7 +33,7 @@ export default function MovieHeroSection({ movie }) {
               <img
                 alt={movie.mName}
                 className="w-full h-full object-cover"
-                src={movie.posterUrl || "/placeholder-movie.svg"}
+                src={movie.posterUrl || '/placeholder-movie.svg'}
               />
             </div>
           </div>
@@ -68,24 +64,20 @@ export default function MovieHeroSection({ movie }) {
               <div className="space-y-1">
                 <p className="fact-label">Diễn viên</p>
                 <p className="fact-value">
-                  {movie.actors?.map((a) => a.fullName || a).join(", ") ||
-                    "Đang cập nhật..."}
+                  {movie.actors?.map((a) => a.fullName || a).join(', ') || 'Đang cập nhật...'}
                 </p>
               </div>
               <div className="space-y-1">
                 <p className="fact-label">Phiên bản</p>
                 <p className="fact-value">
-                  {movie.isDub ? "Lồng tiếng" : ""}{" "}
-                  {movie.isSub && movie.isDub ? "|" : ""}{" "}
-                  {movie.isSub ? "Phụ đề" : ""}
+                  {movie.isDub ? 'Lồng tiếng' : ''} {movie.isSub && movie.isDub ? '|' : ''}{' '}
+                  {movie.isSub ? 'Phụ đề' : ''}
                 </p>
               </div>
             </div>
 
             <div className="max-w-2xl">
-              <p className="hero-description">
-                {movie.descript || "Đang cập nhật mô tả phim..."}
-              </p>
+              <p className="hero-description">{movie.descript || 'Đang cập nhật mô tả phim...'}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 pt-4">
@@ -94,10 +86,7 @@ export default function MovieHeroSection({ movie }) {
                 Mua Vé
               </a>
               {getEmbedUrl(movie.trailerUrl) && (
-                <button
-                  onClick={() => setShowTrailer(true)}
-                  className="btn secondary"
-                >
+                <button onClick={() => setShowTrailer(true)} className="btn secondary">
                   Trailer
                 </button>
               )}

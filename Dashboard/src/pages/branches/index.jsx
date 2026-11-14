@@ -1,4 +1,4 @@
-import {ErrorState} from '@/components/ui/Feedback';
+import { ErrorState } from '@/components/ui/Feedback';
 import Pagination from '@/components/tables/Pagination';
 import { usePagination } from '@/hooks/usePagination';
 import { PermissionButton } from '@/components/RoleGuard';
@@ -10,125 +10,155 @@ import { employeeService } from '@/services/employeeService';
 import BranchAddModal from '@/components/BranchAddModal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 export default function BranchesPage() {
-    const [branches, setBranches] = useState([]);
-    const [query,setQuery] = useState('');
-    const [active,setActive] = useState('');
-    const filtered=branches.filter(b=>(b.bName+' '+b.bAddress).toLowerCase().includes(query.toLowerCase())&&(!active||String(b.isActive)===active));
-    const pagination=usePagination(filtered,10,query+active);
-    const [selectedBranch, setSelectedBranch] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [loadError,setLoadError]=useState('');
-    const [isUpdating, setIsUpdating] = useState(false);
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [managers, setManagers] = useState([]);
-    // State cho Confirm Delete
-    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-    const loadBranches = async () => {
-        try {
-            setIsLoading(true);setLoadError('');
-            const data = await branchService.getAll();
-            setBranches(data);
-            if (data.length > 0 && !selectedBranch) {
-                setSelectedBranch(data[0]);
-            }
-            // Load Managers
-            const empData = await employeeService.getAll();
-            setManagers(empData.filter(e => e.userType.toUpperCase().includes('MANAGER')));
-        }
-        catch (error) {
-            setLoadError(error.message || "Không thể tải dữ liệu.");
-            toast.error("Không thể nạp dữ liệu chi nhánh và nhân sự.");
-        }
-        finally {
-            setIsLoading(false);
-        }
-    };
-    useEffect(() => {
-        loadBranches();
-    }, []);
-    // Xử lý cập nhật thông tin chi nhánh
-    const handleUpdate = async (e) => {
-        e.preventDefault();
-        if (!selectedBranch || isUpdating)
-            return;
-        setIsUpdating(true);
-        try {
-            const updateData = {
-                bName: selectedBranch.bName,
-                bAddress: selectedBranch.bAddress,
-                phoneNumbers: selectedBranch.phoneNumbers,
-                managerId: selectedBranch.managerId,
-                isActive: selectedBranch.isActive,
-            };
-            const updated = await branchService.update(selectedBranch.branchId, updateData);
-            toast.success(`Đã cập nhật chi nhánh: ${selectedBranch.bName}`);
-            // Cập nhật lại danh sách local để đồng bộ UI
-            setBranches(prev => prev.map(b => b.branchId === selectedBranch.branchId ? { ...selectedBranch, ...updated } : b));
-        }
-        catch (error) {
-            toast.error("Lỗi khi cập nhật thông tin lên hệ thống.");
-        }
-        finally {
-            setIsUpdating(false);
-        }
-    };
-    // Xử lý Xóa chi nhánh
-    const handleDelete = () => {
-        if (!selectedBranch)
-            return;
-        setIsConfirmOpen(true);
-    };
-    const confirmDelete = async () => {
-        if (!selectedBranch)
-            return;
-        try {
-            setIsUpdating(true);
-            await branchService.delete(selectedBranch.branchId);
-            toast.success(`Đã xóa chi nhánh ${selectedBranch.bName}`);
-            const updatedBranches = branches.filter(b => b.branchId !== selectedBranch.branchId);
-            setBranches(updatedBranches);
-            if (updatedBranches.length > 0) {
-                setSelectedBranch(updatedBranches[0]);
-            }
-            else {
-                setSelectedBranch(null);
-            }
-        }
-        catch (error) {
-            toast.error("Không thể xóa chi nhánh. Vui lòng thử lại.");
-            throw error;
-        }
-        finally {
-            setIsUpdating(false);
-        }
-    };
-    if (isLoading) {
-        return (<div className="flex h-[60vh] items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-indigo-500"/>
-      </div>);
+  const [branches, setBranches] = useState([]);
+  const [query, setQuery] = useState('');
+  const [active, setActive] = useState('');
+  const filtered = branches.filter(
+    (b) =>
+      (b.bName + ' ' + b.bAddress).toLowerCase().includes(query.toLowerCase()) &&
+      (!active || String(b.isActive) === active),
+  );
+  const pagination = usePagination(filtered, 10, query + active);
+  const [selectedBranch, setSelectedBranch] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [managers, setManagers] = useState([]);
+  // State cho Confirm Delete
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const loadBranches = async () => {
+    try {
+      setIsLoading(true);
+      setLoadError('');
+      const data = await branchService.getAll();
+      setBranches(data);
+      if (data.length > 0 && !selectedBranch) {
+        setSelectedBranch(data[0]);
+      }
+      // Load Managers
+      const empData = await employeeService.getAll();
+      setManagers(empData.filter((e) => e.userType.toUpperCase().includes('MANAGER')));
+    } catch (error) {
+      setLoadError(error.message || 'Không thể tải dữ liệu.');
+      toast.error('Không thể nạp dữ liệu chi nhánh và nhân sự.');
+    } finally {
+      setIsLoading(false);
     }
-    if(loadError)return <ErrorState error={loadError} retry={loadBranches}/>;
-    return (<div className="w-full max-w-[1600px] mx-auto min-h-screen flex flex-col pb-12 px-4 relative">
-
+  };
+  useEffect(() => {
+    loadBranches();
+  }, []);
+  // Xử lý cập nhật thông tin chi nhánh
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!selectedBranch || isUpdating) return;
+    setIsUpdating(true);
+    try {
+      const updateData = {
+        bName: selectedBranch.bName,
+        bAddress: selectedBranch.bAddress,
+        phoneNumbers: selectedBranch.phoneNumbers,
+        managerId: selectedBranch.managerId,
+        isActive: selectedBranch.isActive,
+      };
+      const updated = await branchService.update(selectedBranch.branchId, updateData);
+      toast.success(`Đã cập nhật chi nhánh: ${selectedBranch.bName}`);
+      // Cập nhật lại danh sách local để đồng bộ UI
+      setBranches((prev) =>
+        prev.map((b) =>
+          b.branchId === selectedBranch.branchId ? { ...selectedBranch, ...updated } : b,
+        ),
+      );
+    } catch (error) {
+      toast.error('Lỗi khi cập nhật thông tin lên hệ thống.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+  // Xử lý Xóa chi nhánh
+  const handleDelete = () => {
+    if (!selectedBranch) return;
+    setIsConfirmOpen(true);
+  };
+  const confirmDelete = async () => {
+    if (!selectedBranch) return;
+    try {
+      setIsUpdating(true);
+      await branchService.delete(selectedBranch.branchId);
+      toast.success(`Đã xóa chi nhánh ${selectedBranch.bName}`);
+      const updatedBranches = branches.filter((b) => b.branchId !== selectedBranch.branchId);
+      setBranches(updatedBranches);
+      if (updatedBranches.length > 0) {
+        setSelectedBranch(updatedBranches[0]);
+      } else {
+        setSelectedBranch(null);
+      }
+    } catch (error) {
+      toast.error('Không thể xóa chi nhánh. Vui lòng thử lại.');
+      throw error;
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+  if (isLoading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
+  if (loadError) return <ErrorState error={loadError} retry={loadBranches} />;
+  return (
+    <div className="w-full max-w-[1600px] mx-auto min-h-screen flex flex-col pb-12 px-4 relative">
       {/* Header Section */}
       <div className="flex items-end justify-between mb-10 pt-8">
         <div>
-          <span className="text-[11px] font-bold text-indigo-500 uppercase tracking-[2px] mb-1 block">Network</span>
+          <span className="text-[11px] font-bold text-indigo-500 uppercase tracking-[2px] mb-1 block">
+            Network
+          </span>
           <h1 className="text-2xl font-semibold">Chi nhánh</h1>
-          <p className="text-gray-500 font-medium mt-1">Quản lý mạng lưới chi nhánh rạp phim trên toàn quốc.</p>
+          <p className="text-gray-500 font-medium mt-1">
+            Quản lý mạng lưới chi nhánh rạp phim trên toàn quốc.
+          </p>
         </div>
 
-        <PermissionButton permission="branches:create" onClick={() => setIsAddModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-indigo-100 transition-all flex items-center gap-3 uppercase tracking-widest text-xs">
-          <Plus className="w-5 h-5"/> Thêm chi nhánh
+        <PermissionButton
+          permission="branches:create"
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-indigo-100 transition-all flex items-center gap-3 uppercase tracking-widest text-xs"
+        >
+          <Plus className="w-5 h-5" /> Thêm chi nhánh
         </PermissionButton>
       </div>
 
-      <div className="flex flex-wrap gap-3 mb-4"><input className="form-control flex-1 min-w-48" aria-label="Tìm chi nhánh" placeholder="Tìm chi nhánh…" value={query} onChange={e=>setQuery(e.target.value)}/><select className="form-control w-auto" aria-label="Trạng thái chi nhánh" value={active} onChange={e=>setActive(e.target.value)}><option value="">Tất cả trạng thái</option><option value="true">Hoạt động</option><option value="false">Tạm đóng</option></select></div><Pagination {...pagination}/>
+      <div className="flex flex-wrap gap-3 mb-4">
+        <input
+          className="form-control flex-1 min-w-48"
+          aria-label="Tìm chi nhánh"
+          placeholder="Tìm chi nhánh…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <select
+          className="form-control w-auto"
+          aria-label="Trạng thái chi nhánh"
+          value={active}
+          onChange={(e) => setActive(e.target.value)}
+        >
+          <option value="">Tất cả trạng thái</option>
+          <option value="true">Hoạt động</option>
+          <option value="false">Tạm đóng</option>
+        </select>
+      </div>
+      <Pagination {...pagination} />
       <div className="flex flex-col 2xl:flex-row gap-8 items-start">
         {/* Left Side: Table List */}
         <div className="w-full min-w-0 flex-1 bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-x-auto">
           <div className="p-6 border-b border-gray-50 bg-gray-50/30">
-            <h2 className="text-xl font-black text-gray-800 tracking-tight uppercase">Danh sách chi nhánh</h2>
+            <h2 className="text-xl font-black text-gray-800 tracking-tight uppercase">
+              Danh sách chi nhánh
+            </h2>
           </div>
           <table className="w-full text-left">
             <thead className="bg-gray-50/50 border-b border-gray-100">
@@ -140,104 +170,221 @@ export default function BranchesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filtered.length > 0 ? pagination.items.map((branch, i) => (<tr key={branch.branchId || i} onClick={() => setSelectedBranch(branch)} className={`hover:bg-indigo-50/30 cursor-pointer transition-all ${selectedBranch?.branchId === branch.branchId ? 'bg-indigo-50/50' : ''}`}>
-                  <td className="px-8 py-5 text-sm font-bold text-indigo-600 text-center">#{branch.branchId}</td>
-                  <td className="px-8 py-5">
-                    <div>
-                      <p className="text-sm font-black text-gray-800 leading-tight uppercase tracking-tighter">{branch.bName}</p>
-                      <p className="text-[11px] text-gray-400 font-bold mt-0.5 uppercase tracking-tighter">{branch.managerName || 'Chưa có quản lý'}</p>
-                    </div>
+              {filtered.length > 0 ? (
+                pagination.items.map((branch, i) => (
+                  <tr
+                    key={branch.branchId || i}
+                    onClick={() => setSelectedBranch(branch)}
+                    className={`hover:bg-indigo-50/30 cursor-pointer transition-all ${selectedBranch?.branchId === branch.branchId ? 'bg-indigo-50/50' : ''}`}
+                  >
+                    <td className="px-8 py-5 text-sm font-bold text-indigo-600 text-center">
+                      #{branch.branchId}
+                    </td>
+                    <td className="px-8 py-5">
+                      <div>
+                        <p className="text-sm font-black text-gray-800 leading-tight uppercase tracking-tighter">
+                          {branch.bName}
+                        </p>
+                        <p className="text-[11px] text-gray-400 font-bold mt-0.5 uppercase tracking-tighter">
+                          {branch.managerName || 'Chưa có quản lý'}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div
+                        className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 ${branch.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}
+                      >
+                        <div
+                          className={`w-1.5 h-1.5 rounded-full ${branch.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`}
+                        />
+                        {branch.isActive ? 'Active' : 'Maintenance'}
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 text-right">
+                      <ChevronRight
+                        className={`w-5 h-5 transition-transform ${selectedBranch?.branchId === branch.branchId ? 'translate-x-1 text-indigo-500' : 'text-gray-300'}`}
+                      />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-8 py-20 text-center text-gray-300 font-black uppercase tracking-widest text-xs"
+                  >
+                    Không tìm thấy chi nhánh nào
                   </td>
-                  <td className="px-8 py-5">
-                    <div className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 ${branch.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
-                      <div className={`w-1.5 h-1.5 rounded-full ${branch.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`}/>
-                      {branch.isActive ? 'Active' : 'Maintenance'}
-                    </div>
-                  </td>
-                  <td className="px-8 py-5 text-right">
-                    <ChevronRight className={`w-5 h-5 transition-transform ${selectedBranch?.branchId === branch.branchId ? 'translate-x-1 text-indigo-500' : 'text-gray-300'}`}/>
-                  </td>
-                </tr>)) : (<tr>
-                  <td colSpan={4} className="px-8 py-20 text-center text-gray-300 font-black uppercase tracking-widest text-xs">Không tìm thấy chi nhánh nào</td>
-                </tr>)}
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Right Side: Detail & Edit Form */}
         <aside className="w-[450px] sticky top-8">
-          {selectedBranch ? (<div className="bg-white rounded-[32px] shadow-2xl shadow-indigo-100/20 border border-gray-100 p-8">
+          {selectedBranch ? (
+            <div className="bg-white rounded-[32px] shadow-2xl shadow-indigo-100/20 border border-gray-100 p-8">
               <div className="flex items-center gap-4 mb-8 pb-6 border-b border-gray-50">
                 <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-100">
-                  <Building2 className="w-6 h-6"/>
+                  <Building2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-gray-800 uppercase tracking-tighter">Chi tiết vận hành</h3>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hiệu chỉnh chi nhánh</p>
+                  <h3 className="text-xl font-black text-gray-800 uppercase tracking-tighter">
+                    Chi tiết vận hành
+                  </h3>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    Hiệu chỉnh chi nhánh
+                  </p>
                 </div>
               </div>
 
               <form className="space-y-6" onSubmit={handleUpdate}>
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Tên chi nhánh</label>
-                  <input aria-label="Tên chi nhánh" type="text" required value={selectedBranch.bName} onChange={(e) => setSelectedBranch({ ...selectedBranch, bName: e.target.value })} className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold text-gray-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"/>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                    Tên chi nhánh
+                  </label>
+                  <input
+                    aria-label="Tên chi nhánh"
+                    type="text"
+                    required
+                    value={selectedBranch.bName}
+                    onChange={(e) =>
+                      setSelectedBranch({ ...selectedBranch, bName: e.target.value })
+                    }
+                    className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold text-gray-800 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Địa chỉ vật lý</label>
-                  <textarea aria-label="Địa chỉ vật lý" rows={3} required value={selectedBranch.bAddress} onChange={(e) => setSelectedBranch({ ...selectedBranch, bAddress: e.target.value })} className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none resize-none transition-all"/>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                    Địa chỉ vật lý
+                  </label>
+                  <textarea
+                    aria-label="Địa chỉ vật lý"
+                    rows={3}
+                    required
+                    value={selectedBranch.bAddress}
+                    onChange={(e) =>
+                      setSelectedBranch({ ...selectedBranch, bAddress: e.target.value })
+                    }
+                    className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-indigo-500 outline-none resize-none transition-all"
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Trạng thái vận hành</label>
-                    <select aria-label="Trạng thái vận hành" value={selectedBranch.isActive ? 'true' : 'false'} onChange={(e) => setSelectedBranch({ ...selectedBranch, isActive: e.target.value === 'true' })} className={`w-full border-none rounded-2xl px-5 py-4 text-sm font-black outline-none transition-all ${selectedBranch.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                      Trạng thái vận hành
+                    </label>
+                    <select
+                      aria-label="Trạng thái vận hành"
+                      value={selectedBranch.isActive ? 'true' : 'false'}
+                      onChange={(e) =>
+                        setSelectedBranch({
+                          ...selectedBranch,
+                          isActive: e.target.value === 'true',
+                        })
+                      }
+                      className={`w-full border-none rounded-2xl px-5 py-4 text-sm font-black outline-none transition-all ${selectedBranch.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}
+                    >
                       <option value="true">Đang hoạt động (Active)</option>
                       <option value="false">Tạm dừng (Maintenance)</option>
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Liên hệ (SĐT)</label>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                      Liên hệ (SĐT)
+                    </label>
                     <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300"/>
-                      <input type="text" required value={selectedBranch.phoneNumbers?.[0] || ''} onChange={(e) => setSelectedBranch({ ...selectedBranch, phoneNumbers: [e.target.value] })} className="w-full bg-gray-50 border-none rounded-2xl pl-12 pr-5 py-4 text-sm font-bold text-gray-800 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"/>
+                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                      <input
+                        type="text"
+                        required
+                        value={selectedBranch.phoneNumbers?.[0] || ''}
+                        onChange={(e) =>
+                          setSelectedBranch({ ...selectedBranch, phoneNumbers: [e.target.value] })
+                        }
+                        className="w-full bg-gray-50 border-none rounded-2xl pl-12 pr-5 py-4 text-sm font-bold text-gray-800 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                      />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Quản lý phụ trách</label>
-                  <select aria-label="Quản lý phụ trách" value={selectedBranch.managerId || ''} onChange={(e) => setSelectedBranch({ ...selectedBranch, managerId: e.target.value })} className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold text-gray-800 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-all">
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
+                    Quản lý phụ trách
+                  </label>
+                  <select
+                    aria-label="Quản lý phụ trách"
+                    value={selectedBranch.managerId || ''}
+                    onChange={(e) =>
+                      setSelectedBranch({ ...selectedBranch, managerId: e.target.value })
+                    }
+                    className="w-full bg-gray-50 border-none rounded-2xl px-5 py-4 text-sm font-bold text-gray-800 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-all"
+                  >
                     <option value="">Chọn quản lý...</option>
-                    {managers.map(m => (<option key={m.eUserId} value={m.eUserId}>
+                    {managers.map((m) => (
+                      <option key={m.eUserId} value={m.eUserId}>
                         {m.eName} (ID: {m.eUserId})
-                      </option>))}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div className="flex gap-4 pt-6">
-                  <PermissionButton permission="branches:update" type="submit" disabled={isUpdating} className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black shadow-xl shadow-indigo-100 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs disabled:opacity-50">
-                    {isUpdating ? <Loader2 className="w-5 h-5 animate-spin"/> : <Save className="w-5 h-5"/>}
+                  <PermissionButton
+                    permission="branches:update"
+                    type="submit"
+                    disabled={isUpdating}
+                    className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black shadow-xl shadow-indigo-100 transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs disabled:opacity-50"
+                  >
+                    {isUpdating ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Save className="w-5 h-5" />
+                    )}
                     Lưu thay đổi
                   </PermissionButton>
-                  <PermissionButton permission="branches:delete" type="button" onClick={handleDelete} disabled={isUpdating} className="flex-1 p-4 bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-100 border border-transparent hover:border-rose-200 transition-all disabled:opacity-50">
-                    <Trash2 className="w-6 h-6 mx-auto"/>
+                  <PermissionButton
+                    permission="branches:delete"
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={isUpdating}
+                    className="flex-1 p-4 bg-rose-50 text-rose-600 rounded-2xl hover:bg-rose-100 border border-transparent hover:border-rose-200 transition-all disabled:opacity-50"
+                  >
+                    <Trash2 className="w-6 h-6 mx-auto" />
                   </PermissionButton>
                 </div>
               </form>
-            </div>) : (<div className="h-[400px] flex flex-col items-center justify-center text-gray-300 font-black uppercase tracking-[5px] border-4 border-dashed border-gray-100 rounded-[32px]">
-              <Building2 className="w-16 h-16 mb-4 opacity-10"/>
+            </div>
+          ) : (
+            <div className="h-[400px] flex flex-col items-center justify-center text-gray-300 font-black uppercase tracking-[5px] border-4 border-dashed border-gray-100 rounded-[32px]">
+              <Building2 className="w-16 h-16 mb-4 opacity-10" />
               Chọn chi nhánh
-            </div>)}
+            </div>
+          )}
         </aside>
       </div>
 
       {/* Modal Add Branch */}
-      <BranchAddModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} existingBranches={branches} onSuccess={(newBranch) => {
-            setBranches(prev => [...prev, newBranch]);
-            setSelectedBranch(newBranch);
-        }}/>
+      <BranchAddModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        existingBranches={branches}
+        onSuccess={(newBranch) => {
+          setBranches((prev) => [...prev, newBranch]);
+          setSelectedBranch(newBranch);
+        }}
+      />
 
-      <ConfirmModal isOpen={isConfirmOpen} onClose={() => setIsConfirmOpen(false)} onConfirm={confirmDelete} title="Xác nhận xóa chi nhánh" description={`Bạn có chắc chắn muốn xóa chi nhánh ${selectedBranch?.bName}? Toàn bộ dữ liệu liên quan đến chi nhánh này sẽ bị ảnh hưởng.`}/>
-    </div>);
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={confirmDelete}
+        title="Xác nhận xóa chi nhánh"
+        description={`Bạn có chắc chắn muốn xóa chi nhánh ${selectedBranch?.bName}? Toàn bộ dữ liệu liên quan đến chi nhánh này sẽ bị ảnh hưởng.`}
+      />
+    </div>
+  );
 }

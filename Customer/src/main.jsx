@@ -1,25 +1,16 @@
-import {
-  SiteContentProvider,
-  HomeEditorial,
-} from "./components/shared/SiteContent.jsx";
-import React, { Component, useEffect } from "react";
-import { createRoot } from "react-dom/client";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
-import "./app/globals.css";
-import "./styles.css";
-import Header from "./components/layout/Header.jsx";
-import Footer from "./components/layout/Footer.jsx";
-import HeroSection from "./features/home/components/HeroSection.jsx";
-import NowShowingSection from "./features/home/components/NowShowingSection.jsx";
-import PremiumPromoSection from "./features/home/components/PremiumPromoSection.jsx";
-import SeatSelectionLayout from "./features/booking/components/SeatSelectionLayout.jsx";
-import CheckoutLayout from "./features/checkout/components/CheckoutLayout.jsx";
+import { SiteContentProvider, HomeEditorial } from './components/shared/SiteContent.jsx';
+import React, { Component, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import './app/globals.css';
+import './styles.css';
+import Header from './components/layout/Header.jsx';
+import Footer from './components/layout/Footer.jsx';
+import HeroSection from './features/home/components/HeroSection.jsx';
+import NowShowingSection from './features/home/components/NowShowingSection.jsx';
+import PremiumPromoSection from './features/home/components/PremiumPromoSection.jsx';
+import SeatSelectionLayout from './features/booking/components/SeatSelectionLayout.jsx';
+import CheckoutLayout from './features/checkout/components/CheckoutLayout.jsx';
 import {
   MoviesPage,
   MoviePage,
@@ -28,7 +19,7 @@ import {
   ProductPage,
   CartPage,
   PromotionsPage,
-} from "./pages/CatalogPages.jsx";
+} from './pages/CatalogPages.jsx';
 import {
   AboutPage,
   ServicesPage,
@@ -38,16 +29,16 @@ import {
   NewsPage,
   NewsDetailPage,
   LatestNews,
-} from "./pages/ContentPages.jsx";
+} from './pages/ContentPages.jsx';
 import {
   AuthPage,
   ProfilePage,
   HistoryPage,
   PaymentStatusPage,
   RecoveryPage,
-} from "./pages/AccountPages.jsx";
-import { useUserStore } from "./store/userStore.js";
-import { Page } from "./components/shared/UI.jsx";
+} from './pages/AccountPages.jsx';
+import { useUserStore } from './store/userStore.js';
+import { Page } from './components/shared/UI.jsx';
 class ErrorBoundary extends Component {
   state = { error: null };
   static getDerivedStateFromError(error) {
@@ -88,9 +79,7 @@ function Protected({ children }) {
     children
   ) : (
     <Navigate
-      to={
-        "/login?next=" + encodeURIComponent(location.pathname + location.search)
-      }
+      to={'/login?next=' + encodeURIComponent(location.pathname + location.search)}
       replace
     />
   );
@@ -137,10 +126,7 @@ function App() {
             <Route path="/cart" element={<CartPage />} />
             <Route path="/promotions" element={<PromotionsPage />} />
             <Route path="/login" element={<AuthPage key="login" />} />
-            <Route
-              path="/register"
-              element={<AuthPage register key="register" />}
-            />
+            <Route path="/register" element={<AuthPage register key="register" />} />
             <Route path="/forgot-password" element={<RecoveryPage />} />
             <Route path="/reset-password" element={<RecoveryPage reset />} />
             <Route
@@ -200,7 +186,7 @@ function App() {
     </>
   );
 }
-createRoot(document.getElementById("root")).render(
+createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <SiteContentProvider>

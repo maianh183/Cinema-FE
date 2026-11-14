@@ -1,10 +1,7 @@
-import {
-  SiteContentContext,
-  useSiteContent,
-} from "../../store/siteContentContext.js";
-import { defaultSiteContent } from "../../lib/siteContent.js";
-import { siteContentService } from "../../services/siteContentService.js";
-import { useResource, Metadata } from "./UI.jsx";
+import { SiteContentContext, useSiteContent } from '../../store/siteContentContext.js';
+import { defaultSiteContent } from '../../lib/siteContent.js';
+import { siteContentService } from '../../services/siteContentService.js';
+import { useResource, Metadata } from './UI.jsx';
 
 export function SiteContentProvider({ children }) {
   const resource = useResource(siteContentService.get);
@@ -12,8 +9,7 @@ export function SiteContentProvider({ children }) {
     <SiteContentContext.Provider
       value={{
         content: resource.data?.data || defaultSiteContent,
-        fallbackSections:
-          resource.data?.fallbackSections || Object.keys(defaultSiteContent),
+        fallbackSections: resource.data?.fallbackSections || Object.keys(defaultSiteContent),
         loading: resource.loading,
         error: resource.error,
         reload: resource.reload,
@@ -29,8 +25,8 @@ export function ContentStatus() {
   return (
     <div className="content-status muted" role="status">
       {loading
-        ? "Đang tải nội dung website…"
-        : "Một phần nội dung đang dùng bản mặc định do chưa tải được dữ liệu hợp lệ từ máy chủ."}
+        ? 'Đang tải nội dung website…'
+        : 'Một phần nội dung đang dùng bản mặc định do chưa tải được dữ liệu hợp lệ từ máy chủ.'}
       {!loading && (
         <button className="text-button" onClick={reload}>
           Tải lại nội dung
@@ -43,12 +39,12 @@ export function ContentImage({ src, alt, className }) {
   return (
     <img
       key={src}
-      src={src || "/placeholder-site.svg"}
+      src={src || '/placeholder-site.svg'}
       alt={alt}
       className={className}
       onError={(event) => {
-        if (!event.currentTarget.src.endsWith("/placeholder-site.svg"))
-          event.currentTarget.src = "/placeholder-site.svg";
+        if (!event.currentTarget.src.endsWith('/placeholder-site.svg'))
+          event.currentTarget.src = '/placeholder-site.svg';
       }}
     />
   );
@@ -61,28 +57,18 @@ export function BusinessDetails() {
     <address className="business-details">
       {global.hotline && (
         <p>
-          Hotline:{" "}
-          <a href={`tel:${global.hotline.replace(/[^+\d]/g, "")}`}>
-            {global.hotline}
-          </a>
+          Hotline: <a href={`tel:${global.hotline.replace(/[^+\d]/g, '')}`}>{global.hotline}</a>
         </p>
       )}
       {global.contactEmail && (
         <p>
-          Email:{" "}
-          <a href={`mailto:${global.contactEmail}`}>{global.contactEmail}</a>
+          Email: <a href={`mailto:${global.contactEmail}`}>{global.contactEmail}</a>
         </p>
       )}
-      {global.address && (
-        <p className="plain-text">Địa chỉ: {global.address}</p>
-      )}
+      {global.address && <p className="plain-text">Địa chỉ: {global.address}</p>}
       {global.facebookUrl && (
         <p>
-          <a
-            href={global.facebookUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href={global.facebookUrl} target="_blank" rel="noopener noreferrer">
             Facebook của {global.companyName}
           </a>
         </p>

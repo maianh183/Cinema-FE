@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   catalogService,
   checkoutService,
   seatReservationService,
-} from "../../../services/customer.js";
-import { useBookingStore, useCartStore } from "../../../store/cartStore.js";
+} from '../../../services/customer.js';
+import { useBookingStore, useCartStore } from '../../../store/cartStore.js';
 import {
   money,
   productKey,
@@ -13,7 +13,7 @@ import {
   stock,
   couponDiscount,
   safeUrl,
-} from "../../../lib/business.js";
+} from '../../../lib/business.js';
 import {
   Page,
   State,
@@ -23,15 +23,15 @@ import {
   Metadata,
   useResource,
   useMutation,
-} from "../../../components/shared/UI.jsx";
-import { CartItems } from "../../../pages/CatalogPages.jsx";
+} from '../../../components/shared/UI.jsx';
+import { CartItems } from '../../../pages/CatalogPages.jsx';
 export default function CheckoutLayout() {
   const { reservation, clear } = useBookingStore(),
     cart = useCartStore(),
     navigate = useNavigate(),
-    [couponId, setCouponId] = useState(""),
+    [couponId, setCouponId] = useState(''),
     [remaining, setRemaining] = useState(0),
-    [holdError, setHoldError] = useState(""),
+    [holdError, setHoldError] = useState(''),
     [created, setCreated] = useState(null),
     action = useMutation(),
     key = useRef(crypto.randomUUID());
@@ -45,7 +45,7 @@ export default function CheckoutLayout() {
       catalogService.coupons(),
     ]);
     if (hold.timeId !== reservation.timeId || !hold.branchId || !hold.roomId)
-      throw Error("Dữ liệu giữ ghế không hợp lệ.");
+      throw Error('Dữ liệu giữ ghế không hợp lệ.');
     return { hold, showtime, seats, products, coupons };
   }, reservation?.reservationId);
   useEffect(() => {
@@ -53,12 +53,7 @@ export default function CheckoutLayout() {
     let alive = true,
       running = false;
     const tick = () =>
-      setRemaining(
-        Math.max(
-          0,
-          Math.ceil((Date.parse(reservation.expiresAt) - Date.now()) / 1000),
-        ),
-      );
+      setRemaining(Math.max(0, Math.ceil((Date.parse(reservation.expiresAt) - Date.now()) / 1000)));
     tick();
     const clock = setInterval(tick, 1000),
       poll = setInterval(async () => {
@@ -66,7 +61,7 @@ export default function CheckoutLayout() {
         running = true;
         try {
           await seatReservationService.get(reservation.reservationId);
-          if (alive) setHoldError("");
+          if (alive) setHoldError('');
         } catch (e) {
           if (alive) setHoldError(e.message);
         } finally {
@@ -85,16 +80,12 @@ export default function CheckoutLayout() {
         (n, s) =>
           n +
           data.showtime.rPrice +
-          (data.seats.find((x) => x.sRow === s.sRow && x.sColumn === s.sColumn)
-            ?.sPrice || 0),
+          (data.seats.find((x) => x.sRow === s.sRow && x.sColumn === s.sColumn)?.sPrice || 0),
         0,
       ) || 0,
     addonTotal = cart.items.reduce(
       (n, i) =>
-        n +
-        (data?.products.find((p) => productKey(p) === productKey(i))?.price ||
-          0) *
-          i.quantity,
+        n + (data?.products.find((p) => productKey(p) === productKey(i))?.price || 0) * i.quantity,
       0,
     ),
     total = seatTotal + addonTotal,
@@ -102,7 +93,7 @@ export default function CheckoutLayout() {
     discount = coupon ? couponDiscount(coupon, total) : 0,
     invalid = cart.items.some((i) => {
       const p = data?.products.find((p) => productKey(p) === productKey(i));
-      return !p || productStatus(p) !== "ACTIVE" || i.quantity > stock(p);
+      return !p || productStatus(p) !== 'ACTIVE' || i.quantity > stock(p);
     });
   async function create() {
     await action.run(async () => {
@@ -118,9 +109,7 @@ export default function CheckoutLayout() {
         idempotencyKey: key.current,
       });
       if (!order.orderId || !Number.isFinite(order.total))
-        throw Error(
-          "Máy chủ chưa xác nhận đơn. Vui lòng thử lại để đối chiếu.",
-        );
+        throw Error('Máy chủ chưa xác nhận đơn. Vui lòng thử lại để đối chiếu.');
       setCreated(order);
       clear();
       cart.clear();
@@ -134,8 +123,8 @@ export default function CheckoutLayout() {
         return;
       }
       const url = safeUrl(result.paymentUrl);
-      if (!url || !url.startsWith("https://"))
-        throw Error("Máy chủ chưa trả liên kết thanh toán hợp lệ.");
+      if (!url || !url.startsWith('https://'))
+        throw Error('Máy chủ chưa trả liên kết thanh toán hợp lệ.');
       window.location.assign(url);
     });
   }
@@ -153,10 +142,7 @@ export default function CheckoutLayout() {
           <button className="btn" disabled={action.busy} onClick={payment}>
             Tiếp tục thanh toán
           </button>
-          <Link
-            className="text-button"
-            to={`/checkout/status?orderId=${created.orderId}`}
-          >
+          <Link className="text-button" to={`/checkout/status?orderId=${created.orderId}`}>
             Kiểm tra trạng thái đơn
           </Link>
         </div>
@@ -174,24 +160,19 @@ export default function CheckoutLayout() {
                   {data.showtime.branchName} · Phòng {data.showtime.roomId}
                 </p>
                 <p>
-                  Ghế:{" "}
+                  Ghế:{' '}
                   {data.hold.seats
                     .map((s) => String.fromCharCode(64 + s.sRow) + s.sColumn)
-                    .join(", ")}
+                    .join(', ')}
                 </p>
                 <p role="status">
                   Thời gian giữ ghế: {Math.floor(remaining / 60)}:
-                  {String(remaining % 60).padStart(2, "0")}
+                  {String(remaining % 60).padStart(2, '0')}
                 </p>
                 {(!remaining || holdError) && (
-                  <p className="error">
-                    {holdError || "Giữ ghế đã hết hạn. Vui lòng chọn lại."}
-                  </p>
+                  <p className="error">{holdError || 'Giữ ghế đã hết hạn. Vui lòng chọn lại.'}</p>
                 )}
-                <Link
-                  className="text-button"
-                  to={`/booking/showtime/${reservation.timeId}`}
-                >
+                <Link className="text-button" to={`/booking/showtime/${reservation.timeId}`}>
                   Chọn lại ghế
                 </Link>
                 <button
@@ -199,11 +180,9 @@ export default function CheckoutLayout() {
                   disabled={action.busy}
                   onClick={() =>
                     action.run(async () => {
-                      await seatReservationService.release(
-                        reservation.reservationId,
-                      );
+                      await seatReservationService.release(reservation.reservationId);
                       clear();
-                      navigate("/movies");
+                      navigate('/movies');
                     })
                   }
                 >
@@ -217,17 +196,13 @@ export default function CheckoutLayout() {
               </Link>
               <div className="panel">
                 <Field label="Voucher">
-                  <select
-                    value={couponId}
-                    onChange={(e) => setCouponId(e.target.value)}
-                  >
+                  <select value={couponId} onChange={(e) => setCouponId(e.target.value)}>
                     <option value="">Không áp dụng</option>
                     {data.coupons
                       .filter((c) => couponDiscount(c, total) > 0)
                       .map((c) => (
                         <option value={c.couponId} key={c.couponId}>
-                          #{c.couponId} · Giảm {c.saleOff}% · Tối đa{" "}
-                          {money(c.maxDiscount)}
+                          #{c.couponId} · Giảm {c.saleOff}% · Tối đa {money(c.maxDiscount)}
                         </option>
                       ))}
                   </select>
@@ -236,24 +211,16 @@ export default function CheckoutLayout() {
                 <p>Sản phẩm: {money(addonTotal)}</p>
                 <p>Giảm dự kiến: {money(discount)}</p>
                 <h2>Tạm tính: {money(total - discount)}</h2>
-                <p className="muted">
-                  Giá cuối cùng do máy chủ xác nhận khi tạo đơn.
-                </p>
+                <p className="muted">Giá cuối cùng do máy chủ xác nhận khi tạo đơn.</p>
                 <Feedback action={action} />
                 <button
                   className="btn"
                   disabled={
-                    action.busy ||
-                    !remaining ||
-                    !!holdError ||
-                    invalid ||
-                    (!!couponId && !discount)
+                    action.busy || !remaining || !!holdError || invalid || (!!couponId && !discount)
                   }
                   onClick={create}
                 >
-                  {action.busy
-                    ? "Đang xác nhận…"
-                    : "Tạo đơn & kiểm tra tổng tiền"}
+                  {action.busy ? 'Đang xác nhận…' : 'Tạo đơn & kiểm tra tổng tiền'}
                 </button>
               </div>
             </>

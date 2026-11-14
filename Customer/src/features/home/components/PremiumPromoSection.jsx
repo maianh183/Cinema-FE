@@ -1,16 +1,14 @@
-import { Link } from "react-router-dom";
-import { useSiteContent } from "../../../store/siteContentContext.js";
-import { catalogService } from "../../../services/customer.js";
-import { periodStatus, money } from "../../../lib/business.js";
-import { State, Empty, useResource } from "../../../components/shared/UI.jsx";
+import { Link } from 'react-router-dom';
+import { useSiteContent } from '../../../store/siteContentContext.js';
+import { catalogService } from '../../../services/customer.js';
+import { periodStatus, money } from '../../../lib/business.js';
+import { State, Empty, useResource } from '../../../components/shared/UI.jsx';
 export default function PremiumPromoSection() {
   const {
     content: { global },
   } = useSiteContent();
   const resource = useResource(catalogService.coupons),
-    coupons = (resource.data || []).filter(
-      (c) => periodStatus(c) === "ACTIVE" && c.availNum > 0,
-    );
+    coupons = (resource.data || []).filter((c) => periodStatus(c) === 'ACTIVE' && c.availNum > 0);
   return (
     <section className="section-pad premium-section">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -18,8 +16,7 @@ export default function PremiumPromoSection() {
           <p className="eyebrow">Cùng nhau đến rạp</p>
           <h2 className="cinema-intro-title">{global.companyName}</h2>
           <p className="muted max-w-lg my-6">
-            Khám phá phim, chọn lịch chiếu phù hợp và chia sẻ trải nghiệm của
-            bạn tại từng cơ sở.
+            Khám phá phim, chọn lịch chiếu phù hợp và chia sẻ trải nghiệm của bạn tại từng cơ sở.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link className="btn" to="/cinemas">

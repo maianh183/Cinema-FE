@@ -1,9 +1,9 @@
-import { useSiteContent } from "../store/siteContentContext.js";
-import { BusinessDetails } from "../components/shared/SiteContent.jsx";
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { catalogService, contactService } from "../services/customer.js";
-import { money, dateTime } from "../lib/business.js";
+import { useSiteContent } from '../store/siteContentContext.js';
+import { BusinessDetails } from '../components/shared/SiteContent.jsx';
+import { useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { catalogService, contactService } from '../services/customer.js';
+import { money, dateTime } from '../lib/business.js';
 import {
   State,
   Page,
@@ -14,7 +14,7 @@ import {
   Metadata,
   useResource,
   useMutation,
-} from "../components/shared/UI.jsx";
+} from '../components/shared/UI.jsx';
 export function AboutPage() {
   const {
     content: { about },
@@ -40,9 +40,7 @@ export function AboutPage() {
 }
 async function branchRooms() {
   const branches = await catalogService.branches();
-  const rooms = await Promise.all(
-    branches.map((b) => catalogService.rooms(b.branchId)),
-  );
+  const rooms = await Promise.all(branches.map((b) => catalogService.rooms(b.branchId)));
   return { branches, rooms: rooms.flat() };
 }
 export function ServicesPage() {
@@ -50,15 +48,11 @@ export function ServicesPage() {
     content: { services },
   } = useSiteContent();
   const resource = useResource(branchRooms),
-    [q, setQ] = useState("");
+    [q, setQ] = useState('');
   return (
     <Page title={services.title} description={services.introduction}>
       <Metadata title={services.title} description={services.introduction} />
-      <Field
-        label="Tìm loại phòng"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
+      <Field label="Tìm loại phòng" value={q} onChange={(e) => setQ(e.target.value)} />
       <State resource={resource}>
         <div className="card-grid">
           {[...new Set(resource.data?.rooms.map((r) => r.rType) || [])]
@@ -74,14 +68,12 @@ export function ServicesPage() {
               </article>
             ))}
         </div>
-        {!resource.data?.rooms.some((r) =>
-          r.rType.toLowerCase().includes(q.toLowerCase()),
-        ) && <Empty>Chưa có loại phòng phù hợp.</Empty>}
+        {!resource.data?.rooms.some((r) => r.rType.toLowerCase().includes(q.toLowerCase())) && (
+          <Empty>Chưa có loại phòng phù hợp.</Empty>
+        )}
         <div className="panel">
           <h2>Đồ ăn, thức uống & quà lưu niệm</h2>
-          <p>
-            Danh mục và thời gian kinh doanh được cập nhật theo từng sản phẩm.
-          </p>
+          <p>Danh mục và thời gian kinh doanh được cập nhật theo từng sản phẩm.</p>
           <Link to="/products" className="btn">
             Xem sản phẩm
           </Link>
@@ -114,13 +106,7 @@ export function PricingPage() {
             <tbody>
               {resource.data?.rooms.map((r) => (
                 <tr key={`${r.branchId}-${r.roomId}`}>
-                  <td>
-                    {
-                      resource.data.branches.find(
-                        (b) => b.branchId === r.branchId,
-                      )?.bName
-                    }
-                  </td>
+                  <td>{resource.data.branches.find((b) => b.branchId === r.branchId)?.bName}</td>
                   <td>{r.roomId}</td>
                   <td>{r.rType}</td>
                   <td>{money(r.basePrice)}</td>
@@ -148,32 +134,23 @@ export function ContactPage() {
     for (const key of Object.keys(values)) values[key] = values[key].trim();
     await action.run(async (notify) => {
       if (!values.fullName || !values.subject || !values.content)
-        throw Error("Vui lòng nhập đầy đủ thông tin, không chỉ khoảng trắng.");
+        throw Error('Vui lòng nhập đầy đủ thông tin, không chỉ khoảng trắng.');
       const result = await contactService.send(values);
-      if (!result?.received || !result.id)
-        throw Error("Máy chủ chưa xác nhận đã nhận liên hệ.");
-      notify("Đã nhận thông tin liên hệ.");
+      if (!result?.received || !result.id) throw Error('Máy chủ chưa xác nhận đã nhận liên hệ.');
+      notify('Đã nhận thông tin liên hệ.');
       form.reset();
     });
   }
   return (
     <Page title={contact.title} description={contact.introduction}>
       <Metadata title={contact.title} description={contact.introduction} />
-      <section
-        className="panel business-contact"
-        aria-label="Thông tin liên hệ doanh nghiệp"
-      >
+      <section className="panel business-contact" aria-label="Thông tin liên hệ doanh nghiệp">
         <h2>{global.companyName}</h2>
         <BusinessDetails />
         {!global.contactEmail && !global.hotline && !global.address && (
-          <p>
-            Thông tin doanh nghiệp đang được cập nhật. Bạn vẫn có thể gửi biểu
-            mẫu bên dưới.
-          </p>
+          <p>Thông tin doanh nghiệp đang được cập nhật. Bạn vẫn có thể gửi biểu mẫu bên dưới.</p>
         )}
-        {contact.workingHours && (
-          <p className="plain-text">Giờ làm việc: {contact.workingHours}</p>
-        )}
+        {contact.workingHours && <p className="plain-text">Giờ làm việc: {contact.workingHours}</p>}
         {contact.mapUrl && (
           <a href={contact.mapUrl} target="_blank" rel="noopener noreferrer">
             Xem bản đồ vị trí doanh nghiệp
@@ -182,13 +159,7 @@ export function ContactPage() {
       </section>
       <form className="panel form-width" onSubmit={submit}>
         <Field label="Họ tên" name="fullName" required maxLength={100} />
-        <Field
-          label="Email"
-          name="email"
-          type="email"
-          required
-          maxLength={200}
-        />
+        <Field label="Email" name="email" type="email" required maxLength={200} />
         <Field
           label="Số điện thoại"
           name="phone"
@@ -203,7 +174,7 @@ export function ContactPage() {
         </Field>
         <Feedback action={action} />
         <button className="btn" disabled={action.busy}>
-          {action.busy ? "Đang gửi…" : "Gửi liên hệ"}
+          {action.busy ? 'Đang gửi…' : 'Gửi liên hệ'}
         </button>
       </form>
     </Page>
@@ -211,22 +182,18 @@ export function ContactPage() {
 }
 export function FaqPage() {
   const resource = useResource(catalogService.faq),
-    [q, setQ] = useState("");
+    [q, setQ] = useState('');
   const rows = (resource.data || [])
     .filter(
       (r) =>
-        r.status === "PUBLISHED" &&
-        (r.question + " " + r.answer).toLowerCase().includes(q.toLowerCase()),
+        r.status === 'PUBLISHED' &&
+        (r.question + ' ' + r.answer).toLowerCase().includes(q.toLowerCase()),
     )
     .sort((a, b) => a.sortOrder - b.sortOrder || a.id - b.id);
   return (
     <Page title="Câu hỏi thường gặp">
       <Metadata title="Hỏi đáp" />
-      <Field
-        label="Tìm câu hỏi"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-      />
+      <Field label="Tìm câu hỏi" value={q} onChange={(e) => setQ(e.target.value)} />
       <State resource={resource}>
         {rows.map((r) => (
           <details className="panel" key={r.id}>
@@ -243,7 +210,7 @@ function NewsCards({ rows }) {
   return (
     <div className="card-grid">
       {rows.map((n) => (
-        <Link to={"/news/" + n.slug} className="panel news-card" key={n.id}>
+        <Link to={'/news/' + n.slug} className="panel news-card" key={n.id}>
           {n.imageUrl && <img src={n.imageUrl} alt={n.title} loading="lazy" />}
           <p className="eyebrow">{n.category}</p>
           <h2>{n.title}</h2>
@@ -256,16 +223,14 @@ function NewsCards({ rows }) {
 }
 export function NewsPage() {
   const resource = useResource(catalogService.news),
-    [q, setQ] = useState(""),
-    [category, setCategory] = useState(""),
+    [q, setQ] = useState(''),
+    [category, setCategory] = useState(''),
     [page, setPage] = useState(1);
-  const all = (resource.data || []).filter((n) => n.status === "PUBLISHED"),
+  const all = (resource.data || []).filter((n) => n.status === 'PUBLISHED'),
     rows = all
       .filter(
         (n) =>
-          (n.title + " " + n.content + " " + n.tags)
-            .toLowerCase()
-            .includes(q.toLowerCase()) &&
+          (n.title + ' ' + n.content + ' ' + n.tags).toLowerCase().includes(q.toLowerCase()) &&
           (!category || n.category === category),
       )
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -299,12 +264,7 @@ export function NewsPage() {
       <State resource={resource}>
         <NewsCards rows={rows.slice((page - 1) * 4, page * 4)} />
         {!rows.length && <Empty />}
-        <Pagination
-          page={page}
-          setPage={setPage}
-          total={rows.length}
-          pageSize={4}
-        />
+        <Pagination page={page} setPage={setPage} total={rows.length} pageSize={4} />
       </State>
     </Page>
   );
@@ -312,10 +272,10 @@ export function NewsPage() {
 export function NewsDetailPage() {
   const { slug } = useParams(),
     resource = useResource(catalogService.news, slug),
-    all = (resource.data || []).filter((n) => n.status === "PUBLISHED"),
+    all = (resource.data || []).filter((n) => n.status === 'PUBLISHED'),
     article = all.find((n) => n.slug === slug);
   return (
-    <Page title={article?.title || "Bài viết"}>
+    <Page title={article?.title || 'Bài viết'}>
       <State resource={resource}>
         {article ? (
           <>
@@ -324,9 +284,7 @@ export function NewsDetailPage() {
               description={article.metaDescription}
             />
             <article className="panel prose">
-              {article.imageUrl && (
-                <img src={article.imageUrl} alt={article.title} />
-              )}
+              {article.imageUrl && <img src={article.imageUrl} alt={article.title} />}
               <p className="muted">
                 {article.category} · {dateTime(article.createdAt)}
               </p>
@@ -336,9 +294,7 @@ export function NewsDetailPage() {
             <h2>Bài viết liên quan</h2>
             <NewsCards
               rows={all
-                .filter(
-                  (n) => n.id !== article.id && n.category === article.category,
-                )
+                .filter((n) => n.id !== article.id && n.category === article.category)
                 .slice(0, 3)}
             />
           </>
@@ -360,7 +316,7 @@ export function LatestNews() {
       <State resource={resource}>
         <NewsCards
           rows={(resource.data || [])
-            .filter((n) => n.status === "PUBLISHED")
+            .filter((n) => n.status === 'PUBLISHED')
             .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
             .slice(0, 3)}
         />

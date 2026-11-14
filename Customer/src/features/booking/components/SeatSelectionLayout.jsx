@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { seatReservationService } from "../../../services/customer.js";
-import { useBookingStore } from "../../../store/cartStore.js";
-import { money, seatKey, isFutureShowtime } from "../../../lib/business.js";
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { seatReservationService } from '../../../services/customer.js';
+import { useBookingStore } from '../../../store/cartStore.js';
+import { money, seatKey, isFutureShowtime } from '../../../lib/business.js';
 import {
   Page,
   State,
@@ -11,13 +11,13 @@ import {
   useMutation,
   Empty,
   Metadata,
-} from "../../../components/shared/UI.jsx";
+} from '../../../components/shared/UI.jsx';
 export default function SeatSelectionLayout() {
   const { id } = useParams(),
     navigate = useNavigate(),
     [selected, setSelected] = useState([]),
     [seats, setSeats] = useState([]),
-    [pollError, setPollError] = useState("");
+    [pollError, setPollError] = useState('');
   const resource = useResource(async () => {
       const [showtime, seats] = await Promise.all([
         seatReservationService.showtime(id),
@@ -46,15 +46,12 @@ export default function SeatSelectionLayout() {
         const rows = await seatReservationService.seats(id);
         if (alive) {
           setSeats(rows);
-          setPollError("");
+          setPollError('');
           setSelected((old) =>
             old.filter((s) =>
               rows.some(
                 (r) =>
-                  seatKey(r) === seatKey(s) &&
-                  r.sStatus &&
-                  !r.isBooked &&
-                  r.holdStatus !== "OTHER",
+                  seatKey(r) === seatKey(s) && r.sStatus && !r.isBooked && r.holdStatus !== 'OTHER',
               ),
             ),
           );
@@ -74,10 +71,7 @@ export default function SeatSelectionLayout() {
   }, [id]);
   const showtime = resource.data?.showtime,
     rows = [...new Set(seats.map((s) => s.sRow))].sort((a, b) => a - b),
-    total = selected.reduce(
-      (sum, s) => sum + (showtime?.rPrice || 0) + s.sPrice,
-      0,
-    );
+    total = selected.reduce((sum, s) => sum + (showtime?.rPrice || 0) + s.sPrice, 0);
   function toggle(s) {
     setSelected((old) =>
       old.some((x) => seatKey(x) === seatKey(s))
@@ -96,13 +90,13 @@ export default function SeatSelectionLayout() {
         !Number.isFinite(Date.parse(hold.expiresAt)) ||
         Date.parse(hold.expiresAt) <= Date.now()
       )
-        throw Error("Máy chủ chưa xác nhận giữ ghế.");
+        throw Error('Máy chủ chưa xác nhận giữ ghế.');
       if (!active.current) {
         await seatReservationService.release(hold.reservationId);
         return;
       }
       setReservation(hold);
-      navigate("/checkout");
+      navigate('/checkout');
     });
   }
   return (
@@ -117,9 +111,8 @@ export default function SeatSelectionLayout() {
             <div className="panel booking-heading">
               <h2>{showtime.movieName}</h2>
               <p>
-                {showtime.branchName} · Phòng {showtime.roomId} (
-                {showtime.rType}) · {showtime.day} ·{" "}
-                {showtime.startTime.slice(0, 5)}
+                {showtime.branchName} · Phòng {showtime.roomId} ({showtime.rType}) · {showtime.day}{' '}
+                · {showtime.startTime.slice(0, 5)}
               </p>
             </div>
             <div className="screen">
@@ -131,9 +124,7 @@ export default function SeatSelectionLayout() {
                 Không cập nhật được ghế: {pollError}
               </p>
             )}
-            <p className="muted">
-              Trên màn hình nhỏ, cuộn ngang sơ đồ để xem tất cả ghế.
-            </p>
+            <p className="muted">Trên màn hình nhỏ, cuộn ngang sơ đồ để xem tất cả ghế.</p>
             <div
               className="seat-scroll"
               role="region"
@@ -143,57 +134,46 @@ export default function SeatSelectionLayout() {
               <div className="seat-grid">
                 {rows.map((row) => (
                   <div className="seat-row" key={row}>
-                    <span className="row-label">
-                      {String.fromCharCode(64 + row)}
-                    </span>
+                    <span className="row-label">{String.fromCharCode(64 + row)}</span>
                     {seats
                       .filter((s) => s.sRow === row)
                       .sort((a, b) => a.sColumn - b.sColumn)
                       .map((s) => {
-                        const unavailable =
-                            !s.sStatus ||
-                            s.isBooked ||
-                            s.holdStatus === "OTHER",
-                          chosen = selected.some(
-                            (x) => seatKey(x) === seatKey(s),
-                          );
+                        const unavailable = !s.sStatus || s.isBooked || s.holdStatus === 'OTHER',
+                          chosen = selected.some((x) => seatKey(x) === seatKey(s));
                         return (
                           <button
                             key={seatKey(s)}
                             type="button"
-                            disabled={
-                              unavailable ||
-                              action.busy ||
-                              !isFutureShowtime(showtime)
-                            }
+                            disabled={unavailable || action.busy || !isFutureShowtime(showtime)}
                             aria-pressed={chosen}
-                            aria-label={`Ghế ${String.fromCharCode(64 + s.sRow)}${s.sColumn}, ${s.sType === 2 ? "VIP" : "Thường"}, ${money(showtime.rPrice + s.sPrice)}, ${s.isBooked ? "đã bán" : s.holdStatus === "OTHER" ? "đang được giữ" : !s.sStatus ? "ngừng sử dụng" : chosen ? "đang chọn" : "còn trống"}`}
+                            aria-label={`Ghế ${String.fromCharCode(64 + s.sRow)}${s.sColumn}, ${s.sType === 2 ? 'VIP' : 'Thường'}, ${money(showtime.rPrice + s.sPrice)}, ${s.isBooked ? 'đã bán' : s.holdStatus === 'OTHER' ? 'đang được giữ' : !s.sStatus ? 'ngừng sử dụng' : chosen ? 'đang chọn' : 'còn trống'}`}
                             data-state={
                               s.isBooked
-                                ? "sold"
-                                : s.holdStatus === "OTHER"
-                                  ? "held"
+                                ? 'sold'
+                                : s.holdStatus === 'OTHER'
+                                  ? 'held'
                                   : !s.sStatus
-                                    ? "unavailable"
+                                    ? 'unavailable'
                                     : chosen
-                                      ? "selected"
-                                      : "available"
+                                      ? 'selected'
+                                      : 'available'
                             }
                             onClick={() => toggle(s)}
-                            className={`seat ${s.sType === 2 ? "vip" : ""} ${chosen ? "selected" : ""} ${s.isBooked ? "sold" : ""} ${s.holdStatus === "OTHER" ? "held" : ""}`}
+                            className={`seat ${s.sType === 2 ? 'vip' : ''} ${chosen ? 'selected' : ''} ${s.isBooked ? 'sold' : ''} ${s.holdStatus === 'OTHER' ? 'held' : ''}`}
                           >
                             <span className="seat-symbol" aria-hidden="true">
                               {s.isBooked
-                                ? "×"
-                                : s.holdStatus === "OTHER"
-                                  ? "⏳"
+                                ? '×'
+                                : s.holdStatus === 'OTHER'
+                                  ? '⏳'
                                   : !s.sStatus
-                                    ? "–"
+                                    ? '–'
                                     : chosen
-                                      ? "✓"
+                                      ? '✓'
                                       : s.sType === 2
-                                        ? "V"
-                                        : "○"}
+                                        ? 'V'
+                                        : '○'}
                             </span>
                             <span>
                               {String.fromCharCode(64 + s.sRow)}
@@ -206,71 +186,63 @@ export default function SeatSelectionLayout() {
                 ))}
               </div>
             </div>
-            {!seats.length && (
-              <Empty>Chưa có sơ đồ ghế cho suất chiếu này.</Empty>
-            )}
+            {!seats.length && <Empty>Chưa có sơ đồ ghế cho suất chiếu này.</Empty>}
             <div className="seat-legend">
               <span>
                 <i className="legend-seat" aria-hidden="true">
                   ○
-                </i>{" "}
+                </i>{' '}
                 Còn trống
               </span>
               <span>
                 <i className="legend-seat vip" aria-hidden="true">
                   V
-                </i>{" "}
+                </i>{' '}
                 VIP
               </span>
               <span>
                 <i className="legend-seat selected" aria-hidden="true">
                   ✓
-                </i>{" "}
+                </i>{' '}
                 Đang chọn
               </span>
               <span>
                 <i className="legend-seat held" aria-hidden="true">
                   ⏳
-                </i>{" "}
+                </i>{' '}
                 Đang giữ
               </span>
               <span>
                 <i className="legend-seat sold" aria-hidden="true">
                   ×
-                </i>{" "}
+                </i>{' '}
                 Đã bán
               </span>
               <span>
                 <i className="legend-seat unavailable" aria-hidden="true">
                   –
-                </i>{" "}
+                </i>{' '}
                 Ngừng sử dụng
               </span>
             </div>
             <div className="panel checkout-bar">
               <div>
                 <p>
-                  Ghế chọn:{" "}
-                  {selected
-                    .map((s) => String.fromCharCode(64 + s.sRow) + s.sColumn)
-                    .join(", ") || "Chưa chọn"}
+                  Ghế chọn:{' '}
+                  {selected.map((s) => String.fromCharCode(64 + s.sRow) + s.sColumn).join(', ') ||
+                    'Chưa chọn'}
                 </p>
                 <h2>Tạm tính: {money(total)}</h2>
-                <p className="muted">
-                  Giá cơ bản {money(showtime.rPrice)} + phụ thu theo ghế.
-                </p>
+                <p className="muted">Giá cơ bản {money(showtime.rPrice)} + phụ thu theo ghế.</p>
               </div>
               <button
                 className="btn"
                 disabled={
-                  !selected.length ||
-                  action.busy ||
-                  !!pollError ||
-                  !isFutureShowtime(showtime)
+                  !selected.length || action.busy || !!pollError || !isFutureShowtime(showtime)
                 }
                 onClick={proceed}
               >
-                {action.busy ? "Đang yêu cầu giữ ghế…" : "Giữ ghế & tiếp tục"}
+                {action.busy ? 'Đang yêu cầu giữ ghế…' : 'Giữ ghế & tiếp tục'}
               </button>
             </div>
             <Feedback action={action} />

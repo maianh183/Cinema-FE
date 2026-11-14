@@ -1,38 +1,222 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { businessTime, canConfirmOrder, canManageEmployee, couponStatus, couponUsage, nextCouponAvailable, normalizeOrderStatus, productStatus, showtimeEnd, showtimesOverlap } from '../src/utils/business';
+import {
+  businessTime,
+  canConfirmOrder,
+  canManageEmployee,
+  couponStatus,
+  couponUsage,
+  nextCouponAvailable,
+  normalizeOrderStatus,
+  productStatus,
+  showtimeEnd,
+  showtimesOverlap,
+} from '../src/utils/business';
 import { can } from '../src/utils/permissions';
 import { mockAdapter, resetMock } from '../src/mocks/adapter';
-const request=(url,method='get',data)=>mockAdapter({url,method,data:JSON.stringify(data||{}),headers:{}});
-const login=role=>request('/auth/login','post',{email:role+'@cinema.test',password:'Demo@12345'});
-const coupon={releaseDate:'2026-01-01',startDate:'2026-02-01',endDate:'2026-02-28',isActive:true,releaseNum:100,availNum:60};
-const now=businessTime('2026-02-15');
+const request = (url, method = 'get', data) =>
+  mockAdapter({ url, method, data: JSON.stringify(data || {}), headers: {} });
+const login = (role) =>
+  request('/auth/login', 'post', { email: role + '@cinema.test', password: 'Demo@12345' });
+const coupon = {
+  releaseDate: '2026-01-01',
+  startDate: '2026-02-01',
+  endDate: '2026-02-28',
+  isActive: true,
+  releaseNum: 100,
+  availNum: 60,
+};
+const now = businessTime('2026-02-15');
 beforeEach(resetMock);
-describe('Order confirmation and scoped permissions',()=>{
- const staff={id:'NV003',role:'STAFF',branchId:1,permissions:['orders:confirm-payment']};
- const order={orderId:100,source:'STAFF',createdByEmployeeId:'NV003',branchId:1,total:160000,orderStatus:'pending'};
- it('normalizes case without treating failed/cancelled as paid',()=>{expect(normalizeOrderStatus(' Paid ')).toBe('PAID');expect(normalizeOrderStatus('failed')).toBe('FAILED');});
- it('allows pending staff orders only within branch and permission',()=>{expect(canConfirmOrder(staff,order)).toBe(true);for(const change of [{branchId:2},{orderStatus:'PAID'},{orderStatus:'CANCELLED'},{source:'CUSTOMER'},{createdByEmployeeId:null}])expect(canConfirmOrder(staff,{...order,...change})).toBe(false);expect(canConfirmOrder({...staff,permissions:[]},order)).toBe(false);});
- it('confirms once, rejects repeat and other branch in mock',async()=>{await login('staff');const response=await request('/orders/100/confirm-payment','post');expect(response.data.data.orderStatus).toBe('PAID');await expect(request('/orders/100/confirm-payment','post')).rejects.toMatchObject({response:{status:409}});await expect(request('/orders/103/confirm-payment','post')).rejects.toMatchObject({response:{status:404}});});
- it('blocks arbitrary payment reversal',async()=>{await login('admin');await expect(request('/orders/101','put',{orderStatus:'PENDING'})).rejects.toMatchObject({response:{status:422}});});
- it('blocks manager branches even with wildcard permissions',()=>{expect(can({role:'MANAGER',permissions:['*']},'branches')).toBe(false);expect(can({role:'ADMIN',permissions:['*']},'branches')).toBe(true);});
- it('limits manager personnel mutations to staff in own branch',()=>{const manager={id:'NV002',role:'MANAGER',branchId:1,permissions:['employees:update']};expect(canManageEmployee(manager,{eUserId:'NV003',userType:'STAFF',branchId:1})).toBe(true);for(const data of [{eUserId:'NV004',userType:'STAFF',branchId:2},{eUserId:'NV002',userType:'MANAGER',branchId:1},{eUserId:'NV001',userType:'ADMIN',branchId:1}])expect(canManageEmployee(manager,data)).toBe(false);});
- it('manager can create/edit/lock staff without assigning admin',async()=>{await login('manager');const created=(await request('/employees','post',{eName:'New staff',email:'new@example.test',ePassword:'Demo@12345',userType:'STAFF',branchId:1,salary:10})).data.data;expect(created.ePassword).toBeUndefined();await request('/employees/'+created.eUserId,'put',{eName:'Edited'});await request('/employees/'+created.eUserId+'/deactivate','patch');expect((await request('/employees/'+created.eUserId)).data.data.isActive).toBe(false);await request('/employees/'+created.eUserId+'/activate','patch');expect((await request('/employees/'+created.eUserId)).data.data.isActive).toBe(true);await expect(request('/employees/'+created.eUserId,'put',{userType:'ADMIN'})).rejects.toMatchObject({response:{status:403}});});
+describe('Order confirmation and scoped permissions', () => {
+  const staff = {
+    id: 'NV003',
+    role: 'STAFF',
+    branchId: 1,
+    permissions: ['orders:confirm-payment'],
+  };
+  const order = {
+    orderId: 100,
+    source: 'STAFF',
+    createdByEmployeeId: 'NV003',
+    branchId: 1,
+    total: 160000,
+    orderStatus: 'pending',
+  };
+  it('normalizes case without treating failed/cancelled as paid', () => {
+    expect(normalizeOrderStatus(' Paid ')).toBe('PAID');
+    expect(normalizeOrderStatus('failed')).toBe('FAILED');
+  });
+  it('allows pending staff orders only within branch and permission', () => {
+    expect(canConfirmOrder(staff, order)).toBe(true);
+    for (const change of [
+      { branchId: 2 },
+      { orderStatus: 'PAID' },
+      { orderStatus: 'CANCELLED' },
+      { source: 'CUSTOMER' },
+      { createdByEmployeeId: null },
+    ])
+      expect(canConfirmOrder(staff, { ...order, ...change })).toBe(false);
+    expect(canConfirmOrder({ ...staff, permissions: [] }, order)).toBe(false);
+  });
+  it('confirms once, rejects repeat and other branch in mock', async () => {
+    await login('staff');
+    const response = await request('/orders/100/confirm-payment', 'post');
+    expect(response.data.data.orderStatus).toBe('PAID');
+    await expect(request('/orders/100/confirm-payment', 'post')).rejects.toMatchObject({
+      response: { status: 409 },
+    });
+    await expect(request('/orders/103/confirm-payment', 'post')).rejects.toMatchObject({
+      response: { status: 404 },
+    });
+  });
+  it('blocks arbitrary payment reversal', async () => {
+    await login('admin');
+    await expect(request('/orders/101', 'put', { orderStatus: 'PENDING' })).rejects.toMatchObject({
+      response: { status: 422 },
+    });
+  });
+  it('blocks manager branches even with wildcard permissions', () => {
+    expect(can({ role: 'MANAGER', permissions: ['*'] }, 'branches')).toBe(false);
+    expect(can({ role: 'ADMIN', permissions: ['*'] }, 'branches')).toBe(true);
+  });
+  it('limits manager personnel mutations to staff in own branch', () => {
+    const manager = {
+      id: 'NV002',
+      role: 'MANAGER',
+      branchId: 1,
+      permissions: ['employees:update'],
+    };
+    expect(canManageEmployee(manager, { eUserId: 'NV003', userType: 'STAFF', branchId: 1 })).toBe(
+      true,
+    );
+    for (const data of [
+      { eUserId: 'NV004', userType: 'STAFF', branchId: 2 },
+      { eUserId: 'NV002', userType: 'MANAGER', branchId: 1 },
+      { eUserId: 'NV001', userType: 'ADMIN', branchId: 1 },
+    ])
+      expect(canManageEmployee(manager, data)).toBe(false);
+  });
+  it('manager can create/edit/lock staff without assigning admin', async () => {
+    await login('manager');
+    const created = (
+      await request('/employees', 'post', {
+        eName: 'New staff',
+        email: 'new@example.test',
+        ePassword: 'Demo@12345',
+        userType: 'STAFF',
+        branchId: 1,
+        salary: 10,
+      })
+    ).data.data;
+    expect(created.ePassword).toBeUndefined();
+    await request('/employees/' + created.eUserId, 'put', { eName: 'Edited' });
+    await request('/employees/' + created.eUserId + '/deactivate', 'patch');
+    expect((await request('/employees/' + created.eUserId)).data.data.isActive).toBe(false);
+    await request('/employees/' + created.eUserId + '/activate', 'patch');
+    expect((await request('/employees/' + created.eUserId)).data.data.isActive).toBe(true);
+    await expect(
+      request('/employees/' + created.eUserId, 'put', { userType: 'ADMIN' }),
+    ).rejects.toMatchObject({ response: { status: 403 } });
+  });
 });
-describe('Voucher dates and atomic quantity rules',()=>{
- it('uses Vietnam dates including last millisecond of end date',()=>{expect(couponStatus(coupon,businessTime('2026-01-31',true))).toBe('PREACTIVE');expect(couponStatus(coupon,businessTime('2026-02-01'))).toBe('ACTIVE');expect(couponStatus(coupon,businessTime('2026-02-28',true))).toBe('ACTIVE');expect(couponStatus(coupon,businessTime('2026-03-01'))).toBe('EXPIRED');});
- it('ignores legacy activation and separates invalid dates from lifecycle',()=>{expect(couponStatus({...coupon,isActive:false,availNum:0},now)).toBe('ACTIVE');expect(couponStatus({...coupon,endDate:'2026-02-30'},now)).toBe('INVALID');expect(couponStatus({...coupon,startDate:''},now)).toBe('INVALID');});
- it('formats finite usage and flags inconsistent API data',()=>{expect(couponUsage(coupon)).toBe(40);expect(couponUsage({releaseNum:0,availNum:0})).toBe(0);expect(couponUsage({releaseNum:100,availNum:101})).toBe(null);expect(couponUsage({releaseNum:100,availNum:-1})).toBe(null);});
- it('keeps used quantity when increasing release',()=>{expect(nextCouponAvailable(coupon,120,now)).toBe(80);expect(()=>nextCouponAvailable(coupon,80,now)).toThrow();});
- it('never reduces quantity regardless of dates or legacy release metadata',()=>{for(const startDate of ['2020-01-01','2099-01-01'])for(const releaseNum of [99,80,0])expect(()=>nextCouponAvailable({...coupon,startDate,releaseDate:null},releaseNum)).toThrow('Số lượng phát hành không được nhỏ hơn số lượng hiện tại.');expect(nextCouponAvailable(coupon,100)).toBe(60);});
- it('mock ignores arbitrary available count, preserves usage on increase',async()=>{await login('admin');const {releaseDate,isActive,...old}=(await request('/coupons/1')).data.data;const updated=(await request('/coupons/1','put',{...old,releaseNum:120,availNum:120})).data.data;expect(updated.availNum).toBe(100);await expect(request('/coupons/1','put',{...old,releaseNum:80})).rejects.toMatchObject({response:{status:422}});});
+describe('Voucher dates and atomic quantity rules', () => {
+  it('uses Vietnam dates including last millisecond of end date', () => {
+    expect(couponStatus(coupon, businessTime('2026-01-31', true))).toBe('PREACTIVE');
+    expect(couponStatus(coupon, businessTime('2026-02-01'))).toBe('ACTIVE');
+    expect(couponStatus(coupon, businessTime('2026-02-28', true))).toBe('ACTIVE');
+    expect(couponStatus(coupon, businessTime('2026-03-01'))).toBe('EXPIRED');
+  });
+  it('ignores legacy activation and separates invalid dates from lifecycle', () => {
+    expect(couponStatus({ ...coupon, isActive: false, availNum: 0 }, now)).toBe('ACTIVE');
+    expect(couponStatus({ ...coupon, endDate: '2026-02-30' }, now)).toBe('INVALID');
+    expect(couponStatus({ ...coupon, startDate: '' }, now)).toBe('INVALID');
+  });
+  it('formats finite usage and flags inconsistent API data', () => {
+    expect(couponUsage(coupon)).toBe(40);
+    expect(couponUsage({ releaseNum: 0, availNum: 0 })).toBe(0);
+    expect(couponUsage({ releaseNum: 100, availNum: 101 })).toBe(null);
+    expect(couponUsage({ releaseNum: 100, availNum: -1 })).toBe(null);
+  });
+  it('keeps used quantity when increasing release', () => {
+    expect(nextCouponAvailable(coupon, 120, now)).toBe(80);
+    expect(() => nextCouponAvailable(coupon, 80, now)).toThrow();
+  });
+  it('never reduces quantity regardless of dates or legacy release metadata', () => {
+    for (const startDate of ['2020-01-01', '2099-01-01'])
+      for (const releaseNum of [99, 80, 0])
+        expect(() =>
+          nextCouponAvailable({ ...coupon, startDate, releaseDate: null }, releaseNum),
+        ).toThrow('Số lượng phát hành không được nhỏ hơn số lượng hiện tại.');
+    expect(nextCouponAvailable(coupon, 100)).toBe(60);
+  });
+  it('mock ignores arbitrary available count, preserves usage on increase', async () => {
+    await login('admin');
+    const { releaseDate, isActive, ...old } = (await request('/coupons/1')).data.data;
+    const updated = (await request('/coupons/1', 'put', { ...old, releaseNum: 120, availNum: 120 }))
+      .data.data;
+    expect(updated.availNum).toBe(100);
+    await expect(request('/coupons/1', 'put', { ...old, releaseNum: 80 })).rejects.toMatchObject({
+      response: { status: 422 },
+    });
+  });
 });
-describe('Product dates and showtime duration',()=>{
- const product={startDate:'2026-02-01',endDate:'2026-02-28',quantity:10};
- it('derives all lifecycle states independently of manual active flags',()=>{expect(productStatus({...product,isActive:false},now)).toBe('ACTIVE');expect(productStatus(product,businessTime('2026-01-01'))).toBe('PREACTIVE');expect(productStatus({...product,quantity:0},now)).toBe('OUT_OF_STOCK');expect(productStatus(product,businessTime('2026-03-01'))).toBe('EXPIRED');expect(productStatus({...product,startDate:''},now)).toBe('UNKNOWN');expect(productStatus({...product,endDate:'bad'},now)).toBe('INVALID');});
- it('calculates a midnight crossing with actual duration',()=>{expect(showtimeEnd('2026-12-31','23:30',110)).toEqual({endDate:'2027-01-01',endTime:'01:20:00'});expect(()=>showtimeEnd('2026-12-31','23:30',null)).toThrow();});
- it('detects cross-day overlaps and accepts adjacent showtimes',()=>{const a={branchId:1,roomId:1,day:'2026-12-31',startTime:'23:30',...showtimeEnd('2026-12-31','23:30',110)};expect(showtimesOverlap(a,{...a,day:'2027-01-01',startTime:'00:30',endTime:'02:00'})).toBe(true);expect(showtimesOverlap(a,{...a,day:'2027-01-01',startTime:'01:20',endTime:'03:00'})).toBe(false);});
+describe('Product dates and showtime duration', () => {
+  const product = { startDate: '2026-02-01', endDate: '2026-02-28', quantity: 10 };
+  it('derives all lifecycle states independently of manual active flags', () => {
+    expect(productStatus({ ...product, isActive: false }, now)).toBe('ACTIVE');
+    expect(productStatus(product, businessTime('2026-01-01'))).toBe('PREACTIVE');
+    expect(productStatus({ ...product, quantity: 0 }, now)).toBe('OUT_OF_STOCK');
+    expect(productStatus(product, businessTime('2026-03-01'))).toBe('EXPIRED');
+    expect(productStatus({ ...product, startDate: '' }, now)).toBe('UNKNOWN');
+    expect(productStatus({ ...product, endDate: 'bad' }, now)).toBe('INVALID');
+  });
+  it('calculates a midnight crossing with actual duration', () => {
+    expect(showtimeEnd('2026-12-31', '23:30', 110)).toEqual({
+      endDate: '2027-01-01',
+      endTime: '01:20:00',
+    });
+    expect(() => showtimeEnd('2026-12-31', '23:30', null)).toThrow();
+  });
+  it('detects cross-day overlaps and accepts adjacent showtimes', () => {
+    const a = {
+      branchId: 1,
+      roomId: 1,
+      day: '2026-12-31',
+      startTime: '23:30',
+      ...showtimeEnd('2026-12-31', '23:30', 110),
+    };
+    expect(
+      showtimesOverlap(a, { ...a, day: '2027-01-01', startTime: '00:30', endTime: '02:00' }),
+    ).toBe(true);
+    expect(
+      showtimesOverlap(a, { ...a, day: '2027-01-01', startTime: '01:20', endTime: '03:00' }),
+    ).toBe(false);
+  });
 });
-describe('Reported comments',()=>{
- it('dismiss resolves one report and retains the comment and other pending reports',async()=>{await login('manager');const report=(await request('/comment-reports/1')).data.data;expect(report.target.contentStatus).toBe('VISIBLE');const updated=(await request('/comment-reports/1/resolve','post',{action:'DISMISS'})).data.data;expect(updated.status).toBe('RESOLVED');expect(updated.resolutionAction).toBe('DISMISS');expect(updated.target.contentStatus).toBe('VISIBLE');expect((await request('/comment-reports/3')).data.data.status).toBe('PENDING');});
- it('delete resolves all pending reports for precisely that target, rejects repeat',async()=>{await login('manager');const updated=(await request('/comment-reports/1/resolve','post',{action:'DELETE'})).data.data;expect(updated.status).toBe('RESOLVED');expect(updated.target.contentStatus).toBe('DELETED');const related=(await request('/comment-reports/3')).data.data;expect(related.resolutionAction).toBe('DELETE');expect(related.reporterId).toBe('KH004');expect((await request('/comment-reports/2')).data.data.status).toBe('PENDING');await expect(request('/comment-reports/3/resolve','post',{action:'DELETE'})).rejects.toMatchObject({response:{status:409}});});
+describe('Reported comments', () => {
+  it('dismiss resolves one report and retains the comment and other pending reports', async () => {
+    await login('manager');
+    const report = (await request('/comment-reports/1')).data.data;
+    expect(report.target.contentStatus).toBe('VISIBLE');
+    const updated = (await request('/comment-reports/1/resolve', 'post', { action: 'DISMISS' }))
+      .data.data;
+    expect(updated.status).toBe('RESOLVED');
+    expect(updated.resolutionAction).toBe('DISMISS');
+    expect(updated.target.contentStatus).toBe('VISIBLE');
+    expect((await request('/comment-reports/3')).data.data.status).toBe('PENDING');
+  });
+  it('delete resolves all pending reports for precisely that target, rejects repeat', async () => {
+    await login('manager');
+    const updated = (await request('/comment-reports/1/resolve', 'post', { action: 'DELETE' })).data
+      .data;
+    expect(updated.status).toBe('RESOLVED');
+    expect(updated.target.contentStatus).toBe('DELETED');
+    const related = (await request('/comment-reports/3')).data.data;
+    expect(related.resolutionAction).toBe('DELETE');
+    expect(related.reporterId).toBe('KH004');
+    expect((await request('/comment-reports/2')).data.data.status).toBe('PENDING');
+    await expect(
+      request('/comment-reports/3/resolve', 'post', { action: 'DELETE' }),
+    ).rejects.toMatchObject({ response: { status: 409 } });
+  });
 });

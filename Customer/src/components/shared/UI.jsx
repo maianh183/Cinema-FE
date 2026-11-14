@@ -1,7 +1,7 @@
-import { useSiteContent } from "../../store/siteContentContext.js";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-export function useResource(loader, key = "") {
+import { useSiteContent } from '../../store/siteContentContext.js';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+export function useResource(loader, key = '') {
   const latest = useRef(loader);
   latest.current = loader;
   const [state, setState] = useState({
@@ -20,8 +20,7 @@ export function useResource(loader, key = "") {
         if (active) setState({ data, loading: false, error: null, key });
       })
       .catch((error) => {
-        if (active)
-          setState({ data: null, loading: false, error: error.message, key });
+        if (active) setState({ data: null, loading: false, error: error.message, key });
       });
     return () => {
       active = false;
@@ -29,8 +28,8 @@ export function useResource(loader, key = "") {
   }, [key, version]);
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   useEffect(() => {
-    window.addEventListener("focus", reload);
-    return () => window.removeEventListener("focus", reload);
+    window.addEventListener('focus', reload);
+    return () => window.removeEventListener('focus', reload);
   }, [reload]);
   return {
     ...(state.key === key ? state : { data: null, loading: true, error: null }),
@@ -47,7 +46,7 @@ export function State({ resource, children }) {
   if (resource.error)
     return (
       <div role="alert" className="notice error">
-        {resource.error}{" "}
+        {resource.error}{' '}
         <button className="btn secondary" onClick={resource.reload}>
           Thử lại
         </button>
@@ -70,7 +69,7 @@ export function Page({ title, description, children }) {
     </section>
   );
 }
-export function Empty({ children = "Chưa có dữ liệu phù hợp." }) {
+export function Empty({ children = 'Chưa có dữ liệu phù hợp.' }) {
   return <p className="notice">{children}</p>;
 }
 export function Pagination({ page, setPage, total, pageSize = 8 }) {
@@ -78,21 +77,13 @@ export function Pagination({ page, setPage, total, pageSize = 8 }) {
   if (pages < 2) return null;
   return (
     <nav className="pagination" aria-label="Phân trang">
-      <button
-        className="btn secondary"
-        disabled={page <= 1}
-        onClick={() => setPage(page - 1)}
-      >
+      <button className="btn secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>
         Trước
       </button>
       <span>
         Trang {page} / {pages}
       </span>
-      <button
-        className="btn secondary"
-        disabled={page >= pages}
-        onClick={() => setPage(page + 1)}
-      >
+      <button className="btn secondary" disabled={page >= pages} onClick={() => setPage(page + 1)}>
         Sau
       </button>
     </nav>
@@ -100,15 +91,15 @@ export function Pagination({ page, setPage, total, pageSize = 8 }) {
 }
 export function useMutation() {
   const [busy, setBusy] = useState(false),
-    [error, setError] = useState(""),
-    [message, setMessage] = useState("");
+    [error, setError] = useState(''),
+    [message, setMessage] = useState('');
   const lock = useRef(false);
   const run = async (action) => {
     if (lock.current) return;
     lock.current = true;
     setBusy(true);
-    setError("");
-    setMessage("");
+    setError('');
+    setMessage('');
     try {
       return await action(setMessage);
     } catch (e) {
@@ -188,9 +179,7 @@ export function Metadata({ title, description }) {
     content: { global },
   } = useSiteContent();
   useEffect(() => {
-    document.title = title
-      ? `${title} | ${global.companyName}`
-      : global.companyName;
+    document.title = title ? `${title} | ${global.companyName}` : global.companyName;
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.content = description || global.tagline;
   }, [title, description, global.companyName, global.tagline]);

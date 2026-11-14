@@ -5,10 +5,7 @@ export default defineConfig({
   outputDir: 'test-results/http',
   timeout: 30000,
   workers: 1,
-  reporter: [
-    ['list'],
-    ['html', { open: 'never', outputFolder: 'playwright-http-report' }],
-  ],
+  reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-http-report' }]],
   use: {
     baseURL: 'http://127.0.0.1:3002',
     headless: true,
@@ -26,4 +23,3 @@ export default defineConfig({
     timeout: 60000,
   },
 });
-

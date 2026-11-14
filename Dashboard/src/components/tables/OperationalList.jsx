@@ -1,11 +1,104 @@
-import { useMemo,useState } from 'react';
+import { useMemo, useState } from 'react';
 import Pagination from './Pagination';
 import { usePagination } from '@/hooks/usePagination';
 import StatusBadge from '@/components/ui/StatusBadge';
-export default function OperationalList({rows,columns,onSelect,idKey='id',filters=[]}){
- const [q,setQ]=useState(''),[values,setValues]=useState({});
- const filtered=useMemo(()=>rows.filter(row=>(!q||columns.some(([key])=>String(row[key]??'').toLowerCase().includes(q.toLowerCase())))&&filters.every(f=>!values[f.name]||String(row[f.name])===String(values[f.name]))),[rows,q,values,columns,filters]);
- const pagination=usePagination(filtered,10,q+JSON.stringify(values));
- return <div className="rounded-xl border border-gray-200 bg-white overflow-hidden"><div className="p-4 flex flex-wrap gap-3"><input className="form-control flex-1 min-w-48" aria-label="Tìm kiếm danh sách" placeholder="Tìm kiếm…" value={q} onChange={e=>setQ(e.target.value)}/>{filters.map(f=>f.type==='date'?<input key={f.name} className="form-control w-auto" type="date" aria-label={f.label} value={values[f.name]||''} onChange={e=>setValues({...values,[f.name]:e.target.value})}/>:<select key={f.name} className="form-control w-auto" aria-label={f.label} value={values[f.name]||''} onChange={e=>setValues({...values,[f.name]:e.target.value})}><option value="">{f.label}</option>{(f.options||[...new Set(rows.map(r=>r[f.name]))].map(v=>[v,v])).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select>)}</div><div className="overflow-x-auto"><table className="w-full text-sm text-left"><thead className="bg-gray-50 text-gray-500"><tr>{columns.map(([key,label])=><th key={key} className="p-4">{label}</th>)}{onSelect&&<th className="p-4">Chi tiết</th>}</tr></thead><tbody>{pagination.items.map((r,i)=><tr key={typeof idKey==='function'?idKey(r):r[idKey]??i} className="border-t border-gray-100">{columns.map(([key])=><td key={key} className="p-4">{key==='status'?<StatusBadge value={r[key]}/>:String(r[key]??'—')}</td>)}{onSelect&&<td className="p-4"><button className="btn-secondary" onClick={()=>onSelect(r)}>Xem chi tiết</button></td>}</tr>)}</tbody></table>{!filtered.length&&<p className="p-10 text-center text-gray-500">Không có dữ liệu phù hợp.</p>}</div><Pagination {...pagination}/></div>;
+export default function OperationalList({ rows, columns, onSelect, idKey = 'id', filters = [] }) {
+  const [q, setQ] = useState(''),
+    [values, setValues] = useState({});
+  const filtered = useMemo(
+    () =>
+      rows.filter(
+        (row) =>
+          (!q ||
+            columns.some(([key]) =>
+              String(row[key] ?? '')
+                .toLowerCase()
+                .includes(q.toLowerCase()),
+            )) &&
+          filters.every((f) => !values[f.name] || String(row[f.name]) === String(values[f.name])),
+      ),
+    [rows, q, values, columns, filters],
+  );
+  const pagination = usePagination(filtered, 10, q + JSON.stringify(values));
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <div className="p-4 flex flex-wrap gap-3">
+        <input
+          className="form-control flex-1 min-w-48"
+          aria-label="Tìm kiếm danh sách"
+          placeholder="Tìm kiếm…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+        {filters.map((f) =>
+          f.type === 'date' ? (
+            <input
+              key={f.name}
+              className="form-control w-auto"
+              type="date"
+              aria-label={f.label}
+              value={values[f.name] || ''}
+              onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
+            />
+          ) : (
+            <select
+              key={f.name}
+              className="form-control w-auto"
+              aria-label={f.label}
+              value={values[f.name] || ''}
+              onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
+            >
+              <option value="">{f.label}</option>
+              {(f.options || [...new Set(rows.map((r) => r[f.name]))].map((v) => [v, v])).map(
+                ([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ),
+              )}
+            </select>
+          ),
+        )}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left">
+          <thead className="bg-gray-50 text-gray-500">
+            <tr>
+              {columns.map(([key, label]) => (
+                <th key={key} className="p-4">
+                  {label}
+                </th>
+              ))}
+              {onSelect && <th className="p-4">Chi tiết</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {pagination.items.map((r, i) => (
+              <tr
+                key={typeof idKey === 'function' ? idKey(r) : (r[idKey] ?? i)}
+                className="border-t border-gray-100"
+              >
+                {columns.map(([key]) => (
+                  <td key={key} className="p-4">
+                    {key === 'status' ? <StatusBadge value={r[key]} /> : String(r[key] ?? '—')}
+                  </td>
+                ))}
+                {onSelect && (
+                  <td className="p-4">
+                    <button className="btn-secondary" onClick={() => onSelect(r)}>
+                      Xem chi tiết
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {!filtered.length && (
+          <p className="p-10 text-center text-gray-500">Không có dữ liệu phù hợp.</p>
+        )}
+      </div>
+      <Pagination {...pagination} />
+    </div>
+  );
 }
-

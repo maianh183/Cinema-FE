@@ -1,10 +1,6 @@
-import { useSiteContent } from "../../store/siteContentContext.js";
-import {
-  ContentImage,
-  BusinessDetails,
-  ContentStatus,
-} from "../shared/SiteContent.jsx";
-import { Link } from "react-router-dom";
+import { useSiteContent } from '../../store/siteContentContext.js';
+import { ContentImage, BusinessDetails, ContentStatus } from '../shared/SiteContent.jsx';
+import { Link } from 'react-router-dom';
 export default function Footer() {
   const {
     content: { global },
@@ -13,11 +9,7 @@ export default function Footer() {
     <footer className="site-footer">
       <div>
         <Link className="brand editorial-brand" to="/">
-          <ContentImage
-            src={global.logoUrl}
-            alt=""
-            className="site-brand-logo"
-          />
+          <ContentImage src={global.logoUrl} alt="" className="site-brand-logo" />
           <strong>{global.companyName}</strong>
         </Link>
         <p className="muted">{global.tagline}</p>
@@ -25,10 +17,10 @@ export default function Footer() {
       </div>
       <nav aria-label="Thông tin doanh nghiệp">
         {[
-          ["/about", "Giới thiệu"],
-          ["/services", "Dịch vụ"],
-          ["/pricing", "Bảng giá"],
-          ["/cinemas", "Hệ thống rạp"],
+          ['/about', 'Giới thiệu'],
+          ['/services', 'Dịch vụ'],
+          ['/pricing', 'Bảng giá'],
+          ['/cinemas', 'Hệ thống rạp'],
         ].map(([url, label]) => (
           <Link key={url} to={url}>
             {label}
@@ -37,10 +29,10 @@ export default function Footer() {
       </nav>
       <nav aria-label="Hỗ trợ">
         {[
-          ["/contact", "Liên hệ"],
-          ["/faq", "Hỏi đáp"],
-          ["/news", "Tin tức"],
-          ["/profile", "Tài khoản"],
+          ['/contact', 'Liên hệ'],
+          ['/faq', 'Hỏi đáp'],
+          ['/news', 'Tin tức'],
+          ['/profile', 'Tài khoản'],
         ].map(([url, label]) => (
           <Link key={url} to={url}>
             {label}

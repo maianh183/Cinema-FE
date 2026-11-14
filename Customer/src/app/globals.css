@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin "tailwindcss-animate";
 
 /* Modern Light Cinema. Colors live here; legacy aliases retain their meaning. */
@@ -42,8 +42,8 @@
   --color-on-primary: var(--color-primary-foreground);
   --color-on-secondary: var(--color-secondary-foreground);
   --color-secondary-container: var(--color-accent-light);
-  --font-headline: "Inter", "Segoe UI", Arial, sans-serif;
-  --font-body: "Inter", "Segoe UI", Arial, sans-serif;
+  --font-headline: 'Inter', 'Segoe UI', Arial, sans-serif;
+  --font-body: 'Inter', 'Segoe UI', Arial, sans-serif;
 }
 :root {
   color-scheme: light;

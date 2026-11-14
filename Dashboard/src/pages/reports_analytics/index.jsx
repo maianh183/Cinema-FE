@@ -1,182 +1,300 @@
-import {ErrorState} from '@/components/ui/Feedback';
+import { ErrorState } from '@/components/ui/Feedback';
 import Pagination from '@/components/tables/Pagination';
-import {usePagination} from '@/hooks/usePagination';
-import {downloadCsv} from '@/utils/csv';
+import { usePagination } from '@/hooks/usePagination';
+import { downloadCsv } from '@/utils/csv';
 import { useState, useEffect, useMemo } from 'react';
-import { Download, DollarSign, Ticket, Users, Loader2, TrendingUp, ArrowUpRight, ArrowDownRight, Calendar, Filter } from 'lucide-react';
+import {
+  Download,
+  DollarSign,
+  Ticket,
+  Users,
+  Loader2,
+  TrendingUp,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+  Filter,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { reportService } from '@/services/reportService';
 import { branchService } from '@/services/branchService';
 import { useAuthStore } from '@/stores/authStore';
 import { useSystemStore } from '@/stores/systemStore';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell,
+} from 'recharts';
 import { format } from 'date-fns';
 export default function ReportsAnalyticsPage() {
-    const formatCurrency = useSystemStore(state => state.formatCurrency);
-    const [timeRange, setTimeRange] = useState('30days');
-    const [startDate,setStartDate]=useState('');
-    const [endDate,setEndDate]=useState('');
-    const [query,setQuery]=useState('');
-    const [isLoading, setIsLoading] = useState(true);
-    const [loadError,setLoadError]=useState('');
-    const [data, setData] = useState({
-        daily: [],
-        movie: [],
-        occupancy: []
-    });
-    const [branches, setBranches] = useState([]);
-    const [selectedBranchId, setSelectedBranchId] = useState('all');
-    const { user } = useAuthStore();
-    const isManager = user?.role === 'MANAGER';
-    const activeBranchId = isManager
-        ? user?.branchId
-        : (selectedBranchId !== 'all' ? Number(selectedBranchId) : undefined);
-    useEffect(() => {
-        const fetchBranches = async () => {
-            try {
-                const bData = await branchService.getAll();
-                setBranches(Array.isArray(bData) ? bData : []);
-            }
-            catch (err) {
-            }
-        };
-        if (!isManager) {
-            fetchBranches();
-        }
-    }, [isManager]);
-    const loadAnalyticsData = async () => {
-        try {
-            setIsLoading(true);setLoadError('');
-            const now=new Date();
-            const from=timeRange==='custom'?startDate:format(new Date(now.getFullYear(),now.getMonth(),now.getDate()-(timeRange==='quarterly'?89:29)),'yyyy-MM-dd');
-            const to=timeRange==='custom'?endDate:format(now,'yyyy-MM-dd');
-            if(timeRange==='custom'&&(!from||!to||from>to)){setIsLoading(false);return;}
-            // Fetch data based on role
-            const [dailyRev, movieRev, occupancy] = await Promise.all([
-                reportService.getDailyRevenue(from, to, activeBranchId),
-                reportService.getMovieRevenue(from, to, activeBranchId),
-                reportService.getOccupancyRate(activeBranchId?.toString())
-            ]);
-            setData({
-                daily: Array.isArray(dailyRev) ? dailyRev : [],
-                movie: Array.isArray(movieRev) ? movieRev : [],
-                occupancy: Array.isArray(occupancy) ? occupancy : []
-            });
-        }
-        catch (error) {
-            setLoadError(error.message || "Không thể tải dữ liệu.");
-            toast.error("Không thể nạp dữ liệu báo cáo từ máy chủ.");
-        }
-        finally {
-            setIsLoading(false);
-        }
+  const formatCurrency = useSystemStore((state) => state.formatCurrency);
+  const [timeRange, setTimeRange] = useState('30days');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [query, setQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [data, setData] = useState({
+    daily: [],
+    movie: [],
+    occupancy: [],
+  });
+  const [branches, setBranches] = useState([]);
+  const [selectedBranchId, setSelectedBranchId] = useState('all');
+  const { user } = useAuthStore();
+  const isManager = user?.role === 'MANAGER';
+  const activeBranchId = isManager
+    ? user?.branchId
+    : selectedBranchId !== 'all'
+      ? Number(selectedBranchId)
+      : undefined;
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const bData = await branchService.getAll();
+        setBranches(Array.isArray(bData) ? bData : []);
+      } catch (err) {}
     };
-    useEffect(() => {
-        loadAnalyticsData();
-    }, [activeBranchId,timeRange,startDate,endDate]);
-    const stats = useMemo(() => {
-        const totalRevenue = data.daily.reduce((sum, item) => sum + item.revenue, 0);
-        const totalTickets = data.daily.reduce((sum, item) => sum + item.ticketCount, 0);
-        const avgOccupancy = data.occupancy.length > 0
-            ? data.occupancy.reduce((sum, item) => sum + item.occupancyRate, 0) / data.occupancy.length
-            : 0;
-        const topMovie = data.movie.length > 0
-            ? [...data.movie].sort((a, b) => b.revenue - a.revenue)[0].movieName
-            : 'N/A';
-        return [
-            {
-                title: 'Tổng doanh thu',
-                value: formatCurrency(totalRevenue),
-                trend: '',
-                isPositive: true,
-                icon: <DollarSign className="w-5 h-5"/>,
-                color: 'indigo'
-            },
-            {
-                title: 'Vé đã bán',
-                value: totalTickets.toLocaleString(),
-                trend: '',
-                isPositive: true,
-                icon: <Ticket className="w-5 h-5"/>,
-                color: 'emerald'
-            },
-            {
-                title: 'Tỷ lệ lấp đầy TB',
-                value: `${avgOccupancy.toFixed(1)}%`,
-                trend: '',
-                isPositive: true,
-                icon: <Users className="w-5 h-5"/>,
-                color: 'purple'
-            },
-            {
-                title: 'Phim hot nhất',
-                value: topMovie,
-                trend: '',
-                isPositive: true,
-                icon: <TrendingUp className="w-5 h-5"/>,
-                color: 'rose'
-            }
-        ];
-    }, [data]);
-    const pagination=usePagination(data.occupancy.filter(o=>o.movieName.toLowerCase().includes(query.toLowerCase())),10,query);
-    const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981'];
-    if (isLoading) {
-        return (<div className="flex h-[80vh] flex-col items-center justify-center gap-4">
-        <Loader2 className="w-12 h-12 animate-spin text-indigo-500"/>
-        <p className="text-xs font-black text-gray-400 uppercase tracking-[3px]">Đang tổng hợp báo cáo...</p>
-      </div>);
+    if (!isManager) {
+      fetchBranches();
     }
-    if(loadError)return <ErrorState error={loadError} retry={loadAnalyticsData}/>;
-    return (<div className="w-full max-w-[1600px] mx-auto min-h-screen flex flex-col pb-12 px-4 animate-in fade-in duration-700">
-      
+  }, [isManager]);
+  const loadAnalyticsData = async () => {
+    try {
+      setIsLoading(true);
+      setLoadError('');
+      const now = new Date();
+      const from =
+        timeRange === 'custom'
+          ? startDate
+          : format(
+              new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate() - (timeRange === 'quarterly' ? 89 : 29),
+              ),
+              'yyyy-MM-dd',
+            );
+      const to = timeRange === 'custom' ? endDate : format(now, 'yyyy-MM-dd');
+      if (timeRange === 'custom' && (!from || !to || from > to)) {
+        setIsLoading(false);
+        return;
+      }
+      // Fetch data based on role
+      const [dailyRev, movieRev, occupancy] = await Promise.all([
+        reportService.getDailyRevenue(from, to, activeBranchId),
+        reportService.getMovieRevenue(from, to, activeBranchId),
+        reportService.getOccupancyRate(activeBranchId?.toString()),
+      ]);
+      setData({
+        daily: Array.isArray(dailyRev) ? dailyRev : [],
+        movie: Array.isArray(movieRev) ? movieRev : [],
+        occupancy: Array.isArray(occupancy) ? occupancy : [],
+      });
+    } catch (error) {
+      setLoadError(error.message || 'Không thể tải dữ liệu.');
+      toast.error('Không thể nạp dữ liệu báo cáo từ máy chủ.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    loadAnalyticsData();
+  }, [activeBranchId, timeRange, startDate, endDate]);
+  const stats = useMemo(() => {
+    const totalRevenue = data.daily.reduce((sum, item) => sum + item.revenue, 0);
+    const totalTickets = data.daily.reduce((sum, item) => sum + item.ticketCount, 0);
+    const avgOccupancy =
+      data.occupancy.length > 0
+        ? data.occupancy.reduce((sum, item) => sum + item.occupancyRate, 0) / data.occupancy.length
+        : 0;
+    const topMovie =
+      data.movie.length > 0
+        ? [...data.movie].sort((a, b) => b.revenue - a.revenue)[0].movieName
+        : 'N/A';
+    return [
+      {
+        title: 'Tổng doanh thu',
+        value: formatCurrency(totalRevenue),
+        trend: '',
+        isPositive: true,
+        icon: <DollarSign className="w-5 h-5" />,
+        color: 'indigo',
+      },
+      {
+        title: 'Vé đã bán',
+        value: totalTickets.toLocaleString(),
+        trend: '',
+        isPositive: true,
+        icon: <Ticket className="w-5 h-5" />,
+        color: 'emerald',
+      },
+      {
+        title: 'Tỷ lệ lấp đầy TB',
+        value: `${avgOccupancy.toFixed(1)}%`,
+        trend: '',
+        isPositive: true,
+        icon: <Users className="w-5 h-5" />,
+        color: 'purple',
+      },
+      {
+        title: 'Phim hot nhất',
+        value: topMovie,
+        trend: '',
+        isPositive: true,
+        icon: <TrendingUp className="w-5 h-5" />,
+        color: 'rose',
+      },
+    ];
+  }, [data]);
+  const pagination = usePagination(
+    data.occupancy.filter((o) => o.movieName.toLowerCase().includes(query.toLowerCase())),
+    10,
+    query,
+  );
+  const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981'];
+  if (isLoading) {
+    return (
+      <div className="flex h-[80vh] flex-col items-center justify-center gap-4">
+        <Loader2 className="w-12 h-12 animate-spin text-indigo-500" />
+        <p className="text-xs font-black text-gray-400 uppercase tracking-[3px]">
+          Đang tổng hợp báo cáo...
+        </p>
+      </div>
+    );
+  }
+  if (loadError) return <ErrorState error={loadError} retry={loadAnalyticsData} />;
+  return (
+    <div className="w-full max-w-[1600px] mx-auto min-h-screen flex flex-col pb-12 px-4 animate-in fade-in duration-700">
       {/* Header Section */}
       <div className="flex items-end justify-between mb-10 shrink-0">
         <div>
-          <span className="text-[11px] font-bold text-indigo-500 uppercase tracking-[2.2px] mb-1 block">Analytics Dashboard</span>
+          <span className="text-[11px] font-bold text-indigo-500 uppercase tracking-[2.2px] mb-1 block">
+            Analytics Dashboard
+          </span>
           <h1 className="text-2xl font-semibold">Báo cáo</h1>
           <div className="flex items-center gap-3 mt-2">
             <p className="text-gray-500 font-medium">
               {isManager ? `Dữ liệu tại chi nhánh của bạn` : 'Dữ liệu báo cáo hệ thống'}
             </p>
-            {!isManager && (<select value={selectedBranchId} onChange={(e) => setSelectedBranchId(e.target.value)} className="bg-white border border-gray-200 text-gray-700 rounded-xl px-3 py-1.5 text-sm font-bold shadow-sm outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+            {!isManager && (
+              <select
+                value={selectedBranchId}
+                onChange={(e) => setSelectedBranchId(e.target.value)}
+                className="bg-white border border-gray-200 text-gray-700 rounded-xl px-3 py-1.5 text-sm font-bold shadow-sm outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              >
                 <option value="all">Toàn bộ chi nhánh</option>
-                {branches.map(b => (<option key={b.branchId} value={b.branchId}>{b.bName}</option>))}
-              </select>)}
+                {branches.map((b) => (
+                  <option key={b.branchId} value={b.branchId}>
+                    {b.bName}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <div className="bg-white border border-gray-100 p-1.5 rounded-2xl flex font-bold text-[11px] shadow-sm">
-            {['30days', 'quarterly', 'custom'].map((range) => (<button key={range} onClick={() => setTimeRange(range)} className={`px-5 py-2 rounded-xl transition-all uppercase tracking-tighter ${timeRange === range ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-gray-400 hover:text-gray-900'}`}>
-                {range === '30days' ? '30 Ngày qua' : range === 'quarterly' ? 'Theo Quý' : 'Tùy chỉnh'}
-              </button>))}
+            {['30days', 'quarterly', 'custom'].map((range) => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={`px-5 py-2 rounded-xl transition-all uppercase tracking-tighter ${timeRange === range ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-gray-400 hover:text-gray-900'}`}
+              >
+                {range === '30days'
+                  ? '30 Ngày qua'
+                  : range === 'quarterly'
+                    ? 'Theo Quý'
+                    : 'Tùy chỉnh'}
+              </button>
+            ))}
           </div>
 
-          <button onClick={()=>downloadCsv("doanh-thu.csv",data.daily)} disabled={!data.daily.length} className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
-            <Download className="w-4 h-4"/> Xuất CSV
+          <button
+            onClick={() => downloadCsv('doanh-thu.csv', data.daily)}
+            disabled={!data.daily.length}
+            className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
+          >
+            <Download className="w-4 h-4" /> Xuất CSV
           </button>
         </div>
       </div>
 
-      {timeRange==='custom'&&<div className="flex flex-wrap gap-4 mb-5"><label className="field">Từ ngày<input type="date" required value={startDate} onChange={e=>setStartDate(e.target.value)}/></label><label className="field">Đến ngày<input type="date" required min={startDate} value={endDate} onChange={e=>setEndDate(e.target.value)}/></label>{(!startDate||!endDate||startDate>endDate)&&<p role="alert">Chọn khoảng ngày hợp lệ để tải báo cáo.</p>}</div>}
-      <input className="form-control mb-4" aria-label="Tìm suất chiếu báo cáo" placeholder="Tìm tên phim trong bảng lấp đầy…" value={query} onChange={e=>setQuery(e.target.value)}/>
+      {timeRange === 'custom' && (
+        <div className="flex flex-wrap gap-4 mb-5">
+          <label className="field">
+            Từ ngày
+            <input
+              type="date"
+              required
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </label>
+          <label className="field">
+            Đến ngày
+            <input
+              type="date"
+              required
+              min={startDate}
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </label>
+          {(!startDate || !endDate || startDate > endDate) && (
+            <p role="alert">Chọn khoảng ngày hợp lệ để tải báo cáo.</p>
+          )}
+        </div>
+      )}
+      <input
+        className="form-control mb-4"
+        aria-label="Tìm suất chiếu báo cáo"
+        placeholder="Tìm tên phim trong bảng lấp đầy…"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {stats.map((stat, idx) => (<div key={idx} className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 flex flex-col justify-between h-[180px] transition-all hover:shadow-md group">
+        {stats.map((stat, idx) => (
+          <div
+            key={idx}
+            className="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 flex flex-col justify-between h-[180px] transition-all hover:shadow-md group"
+          >
             <div className="flex items-center justify-between w-full">
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-${stat.color}-50 text-${stat.color}-600 shadow-inner group-hover:scale-110 transition-transform`}>
+              <div
+                className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-${stat.color}-50 text-${stat.color}-600 shadow-inner group-hover:scale-110 transition-transform`}
+              >
                 {stat.icon}
               </div>
-              <div className={`flex items-center gap-1 text-[10px] font-black px-2 py-1 rounded-lg ${stat.isPositive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                {stat.isPositive ? <ArrowUpRight className="w-3 h-3"/> : <ArrowDownRight className="w-3 h-3"/>}
+              <div
+                className={`flex items-center gap-1 text-[10px] font-black px-2 py-1 rounded-lg ${stat.isPositive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}
+              >
+                {stat.isPositive ? (
+                  <ArrowUpRight className="w-3 h-3" />
+                ) : (
+                  <ArrowDownRight className="w-3 h-3" />
+                )}
                 {stat.trend}
               </div>
             </div>
             <div>
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{stat.title}</p>
-              <span className="text-2xl font-black text-gray-800 tracking-tighter truncate block">{stat.value}</span>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                {stat.title}
+              </p>
+              <span className="text-2xl font-black text-gray-800 tracking-tighter truncate block">
+                {stat.value}
+              </span>
             </div>
-          </div>))}
+          </div>
+        ))}
       </div>
 
       {/* Main Charts Row */}
@@ -185,29 +303,60 @@ export default function ReportsAnalyticsPage() {
         <div className="col-span-12 lg:col-span-8 bg-white p-8 rounded-[32px] shadow-sm border border-gray-100 flex flex-col h-[450px]">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h3 className="text-xl font-black text-gray-800 tracking-tight uppercase">Biểu đồ doanh thu</h3>
+              <h3 className="text-xl font-black text-gray-800 tracking-tight uppercase">
+                Biểu đồ doanh thu
+              </h3>
               <p className="text-sm text-gray-400 font-medium">Thống kê doanh thu theo từng ngày</p>
             </div>
             <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100">
-              <Calendar className="w-4 h-4 text-gray-400"/>
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Dữ liệu thực tế</span>
+              <Calendar className="w-4 h-4 text-gray-400" />
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                Dữ liệu thực tế
+              </span>
             </div>
           </div>
-          
+
           <div className="flex-1 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.daily}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6"/>
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#9ca3af' }} tickFormatter={(str) => format(new Date(str), 'dd/MM')}/>
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#9ca3af' }} tickFormatter={(val) => `${(val / 1000000).toFixed(1)}M`}/>
-                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }} labelStyle={{ fontWeight: 800, color: '#1f2937', marginBottom: '4px' }} formatter={(val) => [formatCurrency(Number(val)), 'Doanh thu']}/>
-                <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#colorRevenue)"/>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fontWeight: 700, fill: '#9ca3af' }}
+                  tickFormatter={(str) => format(new Date(str), 'dd/MM')}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fontWeight: 700, fill: '#9ca3af' }}
+                  tickFormatter={(val) => `${(val / 1000000).toFixed(1)}M`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '16px',
+                    border: 'none',
+                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                    padding: '12px',
+                  }}
+                  labelStyle={{ fontWeight: 800, color: '#1f2937', marginBottom: '4px' }}
+                  formatter={(val) => [formatCurrency(Number(val)), 'Doanh thu']}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#6366f1"
+                  strokeWidth={4}
+                  fillOpacity={1}
+                  fill="url(#colorRevenue)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -215,16 +364,38 @@ export default function ReportsAnalyticsPage() {
 
         {/* Top Phim theo doanh thu */}
         <div className="col-span-12 lg:col-span-4 bg-white p-8 rounded-[32px] shadow-sm border border-gray-100 flex flex-col h-[450px]">
-          <h3 className="text-xl font-black text-gray-800 mb-6 tracking-tight uppercase">Top phim doanh thu</h3>
+          <h3 className="text-xl font-black text-gray-800 mb-6 tracking-tight uppercase">
+            Top phim doanh thu
+          </h3>
           <div className="flex-1 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={[...data.movie].sort((a, b) => b.revenue - a.revenue)} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6"/>
-                <XAxis type="number" hide/>
-                <YAxis dataKey="movieName" type="category" width={100} axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 800, fill: '#4b5563' }}/>
-                <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} formatter={(val) => [formatCurrency(Number(val)), 'Doanh thu']}/>
+              <BarChart
+                data={[...data.movie].sort((a, b) => b.revenue - a.revenue)}
+                layout="vertical"
+              >
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6" />
+                <XAxis type="number" hide />
+                <YAxis
+                  dataKey="movieName"
+                  type="category"
+                  width={100}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 9, fontWeight: 800, fill: '#4b5563' }}
+                />
+                <Tooltip
+                  cursor={{ fill: 'transparent' }}
+                  contentStyle={{
+                    borderRadius: '16px',
+                    border: 'none',
+                    boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                  }}
+                  formatter={(val) => [formatCurrency(Number(val)), 'Doanh thu']}
+                />
                 <Bar dataKey="revenue" radius={[0, 10, 10, 0]}>
-                  {data.movie.map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>))}
+                  {data.movie.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
@@ -236,58 +407,87 @@ export default function ReportsAnalyticsPage() {
       <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden mb-10">
         <div className="p-8 border-b border-gray-50 flex justify-between items-center">
           <div>
-            <h3 className="text-xl font-black text-gray-800 tracking-tight uppercase">Chi tiết tỷ lệ lấp đầy</h3>
-            <p className="text-sm text-gray-400 font-medium">Thống kê hiệu suất theo từng suất chiếu</p>
+            <h3 className="text-xl font-black text-gray-800 tracking-tight uppercase">
+              Chi tiết tỷ lệ lấp đầy
+            </h3>
+            <p className="text-sm text-gray-400 font-medium">
+              Thống kê hiệu suất theo từng suất chiếu
+            </p>
           </div>
           <button className="flex items-center gap-2 text-indigo-600 font-black text-[10px] uppercase tracking-widest bg-indigo-50 px-4 py-2 rounded-xl">
-            <Filter className="w-3 h-3"/> Lọc suất chiếu
+            <Filter className="w-3 h-3" /> Lọc suất chiếu
           </button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50">
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Phim / Suất chiếu</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Ngày</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Phòng</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Vé đã bán</th>
-                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Tỷ lệ lấp đầy</th>
+                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  Phim / Suất chiếu
+                </th>
+                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  Ngày
+                </th>
+                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
+                  Phòng
+                </th>
+                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
+                  Vé đã bán
+                </th>
+                <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
+                  Tỷ lệ lấp đầy
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {pagination.items.map((occ, idx) => (<tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+              {pagination.items.map((occ, idx) => (
+                <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-8 py-5">
                     <div className="flex flex-col">
-                      <span className="text-sm font-black text-gray-800 uppercase tracking-tighter">{occ.movieName}</span>
+                      <span className="text-sm font-black text-gray-800 uppercase tracking-tighter">
+                        {occ.movieName}
+                      </span>
                       <span className="text-[10px] font-bold text-indigo-500">{occ.startTime}</span>
                     </div>
                   </td>
                   <td className="px-8 py-5">
-                    <span className="text-xs font-bold text-gray-500">{format(new Date(occ.day), 'dd/MM/yyyy')}</span>
+                    <span className="text-xs font-bold text-gray-500">
+                      {format(new Date(occ.day), 'dd/MM/yyyy')}
+                    </span>
                   </td>
                   <td className="px-8 py-5 text-center">
-                    <span className="px-3 py-1 rounded-full bg-gray-100 text-[10px] font-black text-gray-600 uppercase">Room {occ.roomId}</span>
+                    <span className="px-3 py-1 rounded-full bg-gray-100 text-[10px] font-black text-gray-600 uppercase">
+                      Room {occ.roomId}
+                    </span>
                   </td>
                   <td className="px-8 py-5 text-center">
                     <div className="flex flex-col items-center">
                       <span className="text-sm font-black text-gray-800">{occ.ticketsSold}</span>
-                      <span className="text-[9px] font-bold text-gray-400">/ {occ.capacity || 'N/A'} ghế</span>
+                      <span className="text-[9px] font-bold text-gray-400">
+                        / {occ.capacity || 'N/A'} ghế
+                      </span>
                     </div>
                   </td>
                   <td className="px-8 py-5">
                     <div className="flex items-center justify-center gap-3">
                       <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${occ.occupancyRate > 70 ? 'bg-emerald-500' : occ.occupancyRate > 30 ? 'bg-indigo-500' : 'bg-amber-500'}`} style={{ width: `${occ.occupancyRate}%` }}/>
+                        <div
+                          className={`h-full rounded-full ${occ.occupancyRate > 70 ? 'bg-emerald-500' : occ.occupancyRate > 30 ? 'bg-indigo-500' : 'bg-amber-500'}`}
+                          style={{ width: `${occ.occupancyRate}%` }}
+                        />
                       </div>
-                      <span className="text-xs font-black text-gray-700 w-10">{occ.occupancyRate.toFixed(1)}%</span>
+                      <span className="text-xs font-black text-gray-700 w-10">
+                        {occ.occupancyRate.toFixed(1)}%
+                      </span>
                     </div>
                   </td>
-                </tr>))}
+                </tr>
+              ))}
             </tbody>
           </table>
-          <Pagination {...pagination}/>
+          <Pagination {...pagination} />
         </div>
       </div>
-
-    </div>);
+    </div>
+  );
 }

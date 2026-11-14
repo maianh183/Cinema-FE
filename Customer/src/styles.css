@@ -244,10 +244,10 @@ textarea {
   min-height: 110px;
   resize: vertical;
 }
-input[type="radio"] {
+input[type='radio'] {
   width: auto;
 }
-input[type="file"] {
+input[type='file'] {
   white-space: normal;
 }
 .filters {
@@ -869,7 +869,7 @@ a {
   max-width: 850px;
 }
 .page-heading:after {
-  content: "";
+  content: '';
   display: block;
   width: 48px;
   height: 4px;
@@ -932,11 +932,11 @@ textarea:disabled {
   background: var(--color-subtle);
   color: var(--color-muted-foreground);
 }
-input[type="radio"],
-input[type="checkbox"] {
+input[type='radio'],
+input[type='checkbox'] {
   accent-color: var(--color-primary);
 }
-input[type="file"]::file-selector-button {
+input[type='file']::file-selector-button {
   color: var(--color-primary);
   background: var(--color-primary-light);
   border: 0;
@@ -1088,11 +1088,7 @@ dialog {
 }
 .coupon,
 .voucher-panel {
-  background: linear-gradient(
-    140deg,
-    var(--color-card) 60%,
-    var(--color-primary-light)
-  );
+  background: linear-gradient(140deg, var(--color-card) 60%, var(--color-primary-light));
   border-color: var(--color-divider);
 }
 .coupon {
@@ -1115,31 +1111,31 @@ dialog {
   border: 1px solid var(--color-divider);
 }
 .status-active,
-[data-status="ACTIVE"],
-[data-status="PAID"],
-[data-status="SUCCESS"] {
+[data-status='ACTIVE'],
+[data-status='PAID'],
+[data-status='SUCCESS'] {
   color: var(--color-success);
   background: var(--color-success-light);
   border-color: var(--color-success);
 }
-[data-status="PREACTIVE"],
-[data-status="AWAITING_PAYMENT"],
-[data-status="PENDING"] {
+[data-status='PREACTIVE'],
+[data-status='AWAITING_PAYMENT'],
+[data-status='PENDING'] {
   color: var(--color-primary-hover);
   background: var(--color-primary-light);
   border-color: var(--color-primary);
 }
-[data-status="FAILED"],
-[data-status="INVALID"] {
+[data-status='FAILED'],
+[data-status='INVALID'] {
   color: var(--color-destructive);
   background: var(--color-destructive-light);
   border-color: var(--color-destructive);
 }
-[data-status="EXPIRED"],
-[data-status="CANCELLED"],
-[data-status="OUT_OF_STOCK"],
-[data-status="UNKNOWN"],
-[data-status="REFUNDED"] {
+[data-status='EXPIRED'],
+[data-status='CANCELLED'],
+[data-status='OUT_OF_STOCK'],
+[data-status='UNKNOWN'],
+[data-status='REFUNDED'] {
   color: var(--color-muted-foreground);
   background: var(--color-subtle);
   border-color: var(--color-input);
@@ -1177,11 +1173,7 @@ dialog {
 .hero-wash {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    var(--color-primary-light),
-    transparent 70%
-  );
+  background: linear-gradient(90deg, var(--color-primary-light), transparent 70%);
 }
 .home-hero-content {
   width: min(670px, 100%);
@@ -1386,21 +1378,21 @@ dialog {
   color: var(--color-primary-foreground);
   border: 1px solid var(--color-primary);
 }
-.seat[data-state="sold"],
+.seat[data-state='sold'],
 .legend-seat.sold {
   background: var(--color-seat-unavailable);
   color: var(--color-primary-foreground);
   border: 1px solid var(--color-seat-unavailable);
   box-shadow: none;
 }
-.seat[data-state="held"],
+.seat[data-state='held'],
 .legend-seat.held {
   background: var(--color-accent-light);
   color: var(--color-accent-foreground);
   border: 2px solid var(--color-accent-foreground);
   box-shadow: none;
 }
-.seat[data-state="unavailable"],
+.seat[data-state='unavailable'],
 .legend-seat.unavailable {
   background: var(--color-subtle);
   color: var(--color-muted-foreground);

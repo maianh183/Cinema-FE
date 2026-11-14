@@ -1,23 +1,23 @@
-import { useSiteContent } from "../../store/siteContentContext.js";
-import { ContentImage } from "../shared/SiteContent.jsx";
-import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { useUserStore } from "../../store/userStore.js";
-import { useCartStore } from "../../store/cartStore.js";
-import { USE_MOCK } from "../../services/api.js";
+import { useSiteContent } from '../../store/siteContentContext.js';
+import { ContentImage } from '../shared/SiteContent.jsx';
+import { useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useUserStore } from '../../store/userStore.js';
+import { useCartStore } from '../../store/cartStore.js';
+import { USE_MOCK } from '../../services/api.js';
 const links = [
-  ["/movies", "Phim"],
-  ["/cinemas", "Rạp chiếu"],
-  ["/products", "Sản phẩm"],
-  ["/promotions", "Ưu đãi"],
-  ["/news", "Tin tức"],
+  ['/movies', 'Phim'],
+  ['/cinemas', 'Rạp chiếu'],
+  ['/products', 'Sản phẩm'],
+  ['/promotions', 'Ưu đãi'],
+  ['/news', 'Tin tức'],
 ];
 export default function Header() {
   const {
     content: { global },
   } = useSiteContent();
   const [open, setOpen] = useState(false),
-    [q, setQ] = useState(""),
+    [q, setQ] = useState(''),
     navigate = useNavigate(),
     user = useUserStore((s) => s.user),
     count = useCartStore((s) => s.items.reduce((n, i) => n + i.quantity, 0));
@@ -32,16 +32,8 @@ export default function Header() {
         </div>
       )}
       <header className="site-header">
-        <Link
-          className="brand editorial-brand"
-          to="/"
-          onClick={() => setOpen(false)}
-        >
-          <ContentImage
-            src={global.logoUrl}
-            alt=""
-            className="site-brand-logo"
-          />
+        <Link className="brand editorial-brand" to="/" onClick={() => setOpen(false)}>
+          <ContentImage src={global.logoUrl} alt="" className="site-brand-logo" />
           <strong>{global.companyName}</strong>
         </Link>
         <button
@@ -54,7 +46,7 @@ export default function Header() {
         </button>
         <nav
           id="navigation"
-          className={open ? "navigation open" : "navigation"}
+          className={open ? 'navigation open' : 'navigation'}
           aria-label="Điều hướng chính"
         >
           {links.map(([to, label]) => (
@@ -68,7 +60,7 @@ export default function Header() {
           role="search"
           onSubmit={(e) => {
             e.preventDefault();
-            navigate("/movies?q=" + encodeURIComponent(q.trim()));
+            navigate('/movies?q=' + encodeURIComponent(q.trim()));
             setOpen(false);
           }}
         >
@@ -85,8 +77,8 @@ export default function Header() {
         </form>
         <div className="header-actions">
           <Link to="/cart">Giỏ ({count})</Link>
-          <Link className="btn account-link" to={user ? "/profile" : "/login"}>
-            {user ? "Tài khoản" : "Đăng nhập"}
+          <Link className="btn account-link" to={user ? '/profile' : '/login'}>
+            {user ? 'Tài khoản' : 'Đăng nhập'}
           </Link>
         </div>
       </header>

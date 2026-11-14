@@ -1,23 +1,141 @@
-import {test,expect} from '@playwright/test';
-async function login(page,role='manager'){await page.goto('/login');await page.getByLabel('Email',{exact:true}).fill(role+'@cinema.test');await page.getByLabel('Mật khẩu',{exact:true}).fill('Demo@12345');await page.getByRole('button',{name:'Đăng nhập',exact:true}).click();await expect(page.locator('header')).toBeVisible();}
-async function nav(page,name){await page.getByRole('navigation',{name:'Điều hướng chính'}).getByRole('link',{name,exact:true}).click();}
-async function edit(page){await page.getByRole('button',{name:'Chỉnh sửa sơ đồ',exact:true}).click();await page.getByRole('button',{name:'VIP',exact:true}).click();await page.getByRole('button',{name:'Ghế A1',exact:true}).click();}
+import { test, expect } from '@playwright/test';
+async function login(page, role = 'manager') {
+  await page.goto('/login');
+  await page.getByLabel('Email', { exact: true }).fill(role + '@cinema.test');
+  await page.getByLabel('Mật khẩu', { exact: true }).fill('Demo@12345');
+  await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
+  await expect(page.locator('header')).toBeVisible();
+}
+async function nav(page, name) {
+  await page
+    .getByRole('navigation', { name: 'Điều hướng chính' })
+    .getByRole('link', { name, exact: true })
+    .click();
+}
+async function edit(page) {
+  await page.getByRole('button', { name: 'Chỉnh sửa sơ đồ', exact: true }).click();
+  await page.getByRole('button', { name: 'VIP', exact: true }).click();
+  await page.getByRole('button', { name: 'Ghế A1', exact: true }).click();
+}
 
-for(const role of ['staff','manager','admin'])test(role+' customer list omits email/points but detail keeps them; branch selectors match role',async({page})=>{
- await login(page,role);await nav(page,'Khách hàng');await expect(page.getByRole('columnheader',{name:'Email',exact:true})).toHaveCount(0);await expect(page.getByRole('columnheader',{name:'Điểm tích lũy',exact:true})).toHaveCount(0);await page.getByRole('button',{name:'Chi tiết',exact:true}).first().click();await expect(page.getByRole('dialog')).toContainText('customer1@example.test');await expect(page.getByRole('dialog').locator('input,select,textarea,form')).toHaveCount(0);await expect(page.getByRole('dialog').getByRole('button',{name:'Lưu hồ sơ',exact:true})).toHaveCount(0);await expect(page.getByRole('dialog')).toContainText('0 điểm');await page.getByRole('button',{name:'Close',exact:true}).click();
- await nav(page,'Đơn hàng và vé');await expect(page.getByLabel('Chi nhánh đơn hàng')).toHaveCount(role==='admin'?1:0);await nav(page,'Lịch làm việc');await expect(page.getByLabel('Chi nhánh',{exact:true})).toHaveCount(role==='admin'?1:0);
+for (const role of ['staff', 'manager', 'admin'])
+  test(
+    role + ' customer list omits email/points but detail keeps them; branch selectors match role',
+    async ({ page }) => {
+      await login(page, role);
+      await nav(page, 'Khách hàng');
+      await expect(page.getByRole('columnheader', { name: 'Email', exact: true })).toHaveCount(0);
+      await expect(
+        page.getByRole('columnheader', { name: 'Điểm tích lũy', exact: true }),
+      ).toHaveCount(0);
+      await page.getByRole('button', { name: 'Chi tiết', exact: true }).first().click();
+      await expect(page.getByRole('dialog')).toContainText('customer1@example.test');
+      await expect(page.getByRole('dialog').locator('input,select,textarea,form')).toHaveCount(0);
+      await expect(
+        page.getByRole('dialog').getByRole('button', { name: 'Lưu hồ sơ', exact: true }),
+      ).toHaveCount(0);
+      await expect(page.getByRole('dialog')).toContainText('0 điểm');
+      await page.getByRole('button', { name: 'Close', exact: true }).click();
+      await nav(page, 'Đơn hàng và vé');
+      await expect(page.getByLabel('Chi nhánh đơn hàng')).toHaveCount(role === 'admin' ? 1 : 0);
+      await nav(page, 'Lịch làm việc');
+      await expect(page.getByLabel('Chi nhánh', { exact: true })).toHaveCount(
+        role === 'admin' ? 1 : 0,
+      );
+    },
+  );
+test('staff cancellation preserves total, decreases pending and removes actions', async ({
+  page,
+}) => {
+  await login(page, 'staff');
+  await nav(page, 'Đơn hàng và vé');
+  const pending = page
+    .getByRole('region', { name: 'Đơn chưa xử lý', exact: true })
+    .locator('[data-stat-value]');
+  await expect(pending).not.toHaveText('0');
+  const before = Number(await pending.textContent());
+  const row = page.locator('tbody tr').filter({ hasText: '#100' });
+  await row.getByRole('button', { name: 'Hủy đơn', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Hủy đơn', exact: true }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(row).toContainText('Đã hủy');
+  await expect(row.getByRole('button', { name: /^(Hủy đơn|Xác nhận)$/ })).toHaveCount(0);
+  await expect(pending).toHaveText(String(before - 1));
+  await expect(
+    page
+      .getByRole('region', { name: 'Tổng số đơn hàng', exact: true })
+      .locator('[data-stat-value]'),
+  ).toHaveText('16');
 });
-test('staff cancellation preserves total, decreases pending and removes actions',async({page})=>{
- await login(page,'staff');await nav(page,'Đơn hàng và vé');const pending=page.getByRole('region',{name:'Đơn chưa xử lý',exact:true}).locator('[data-stat-value]');await expect(pending).not.toHaveText('0');const before=Number(await pending.textContent());const row=page.locator('tbody tr').filter({hasText:'#100'});await row.getByRole('button',{name:'Hủy đơn',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'Hủy đơn',exact:true}).click();await expect(page.getByRole('dialog')).toHaveCount(0);await expect(row).toContainText('Đã hủy');await expect(row.getByRole('button',{name:/^(Hủy đơn|Xác nhận)$/})).toHaveCount(0);await expect(pending).toHaveText(String(before-1));await expect(page.getByRole('region',{name:'Tổng số đơn hàng',exact:true}).locator('[data-stat-value]')).toHaveText('16');
+test('room layout read-only default, cancel, room switch save/discard and route guard', async ({
+  page,
+}) => {
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await login(page);
+  await nav(page, 'Phòng & ghế');
+  await page.getByRole('heading', { name: 'Room 1', exact: true }).click();
+  const seat = page.getByRole('button', { name: 'Ghế A1', exact: true });
+  await expect(seat).toBeDisabled();
+  await expect(page.getByText('Sweetbox', { exact: true })).toHaveCount(0);
+  await edit(page);
+  await expect(seat).toHaveAttribute('data-seat-type', '2');
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(seat).toBeDisabled();
+  await expect(seat).toHaveAttribute('data-seat-type', '1');
+  await edit(page);
+  await page.getByRole('heading', { name: 'Room 2', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Có thay đổi chưa lưu' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Ở lại', exact: true }).click();
+  await expect(seat).toHaveAttribute('data-seat-type', '2');
+  await page.getByRole('heading', { name: 'Room 2', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Lưu và tiếp tục' }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(seat).toBeDisabled();
+  await page.getByRole('heading', { name: 'Room 1', exact: true }).click();
+  await expect(seat).toHaveAttribute('data-seat-type', '2');
+  await page.getByRole('button', { name: 'Chỉnh sửa sơ đồ' }).click();
+  await page.getByRole('button', { name: 'Thường', exact: true }).click();
+  await seat.click();
+  await nav(page, 'Khách hàng');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Ở lại' }).click();
+  await expect(page).toHaveURL(/rooms/);
+  await nav(page, 'Khách hàng');
+  await dialog.getByRole('button', { name: 'Bỏ thay đổi' }).click();
+  await expect(page).toHaveURL(/customers/);
+  await nav(page, 'Phòng & ghế');
+  await page.getByRole('heading', { name: 'Room 1', exact: true }).click();
+  await expect(seat).toHaveAttribute('data-seat-type', '2');
+  expect(errors).toEqual([]);
 });
-test('room layout read-only default, cancel, room switch save/discard and route guard',async({page})=>{
- const errors=[];page.on('pageerror',e=>errors.push(e.message));await login(page);await nav(page,'Phòng & ghế');await page.getByRole('heading',{name:'Room 1',exact:true}).click();const seat=page.getByRole('button',{name:'Ghế A1',exact:true});await expect(seat).toBeDisabled();await expect(page.getByText('Sweetbox',{exact:true})).toHaveCount(0);
- await edit(page);await expect(seat).toHaveAttribute('data-seat-type','2');await page.getByRole('button',{name:'Cancel',exact:true}).click();await expect(seat).toBeDisabled();await expect(seat).toHaveAttribute('data-seat-type','1');
- await edit(page);await page.getByRole('heading',{name:'Room 2',exact:true}).click();const dialog=page.getByRole('dialog',{name:'Có thay đổi chưa lưu'});await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:'Ở lại',exact:true}).click();await expect(seat).toHaveAttribute('data-seat-type','2');await page.getByRole('heading',{name:'Room 2',exact:true}).click();await dialog.getByRole('button',{name:'Lưu và tiếp tục'}).click();await expect(dialog).toHaveCount(0);await expect(seat).toBeDisabled();await page.getByRole('heading',{name:'Room 1',exact:true}).click();await expect(seat).toHaveAttribute('data-seat-type','2');
- await page.getByRole('button',{name:'Chỉnh sửa sơ đồ'}).click();await page.getByRole('button',{name:'Thường',exact:true}).click();await seat.click();await nav(page,'Khách hàng');await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:'Ở lại'}).click();await expect(page).toHaveURL(/rooms/);await nav(page,'Khách hàng');await dialog.getByRole('button',{name:'Bỏ thay đổi'}).click();await expect(page).toHaveURL(/customers/);await nav(page,'Phòng & ghế');await page.getByRole('heading',{name:'Room 1',exact:true}).click();await expect(seat).toHaveAttribute('data-seat-type','2');expect(errors).toEqual([]);
-});
-test('dirty seats guard browser back, reload and logout',async({page})=>{
- await login(page);await nav(page,'Khách hàng');await nav(page,'Phòng & ghế');await page.getByRole('heading',{name:'Room 1',exact:true}).click();await edit(page);await page.goBack();const dialog=page.getByRole('dialog',{name:'Có thay đổi chưa lưu'});await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:'Ở lại'}).click();await expect(page).toHaveURL(/rooms/);
- const unload=page.waitForEvent('dialog');await page.evaluate(()=>{setTimeout(()=>location.reload(),0);});const prompt=await unload;expect(prompt.type()).toBe('beforeunload');await prompt.dismiss();await expect(page.getByRole('button',{name:'Ghế A1',exact:true})).toHaveAttribute('data-seat-type','2');
- await page.getByRole('button',{name:'Đăng xuất',exact:true}).click();await expect(dialog).toBeVisible();await dialog.getByRole('button',{name:'Ở lại'}).click();await page.getByRole('button',{name:'Cancel',exact:true}).click();await page.goBack();await expect(page).toHaveURL(/customers/);
+test('dirty seats guard browser back, reload and logout', async ({ page }) => {
+  await login(page);
+  await nav(page, 'Khách hàng');
+  await nav(page, 'Phòng & ghế');
+  await page.getByRole('heading', { name: 'Room 1', exact: true }).click();
+  await edit(page);
+  await page.goBack();
+  const dialog = page.getByRole('dialog', { name: 'Có thay đổi chưa lưu' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Ở lại' }).click();
+  await expect(page).toHaveURL(/rooms/);
+  const unload = page.waitForEvent('dialog');
+  await page.evaluate(() => {
+    setTimeout(() => location.reload(), 0);
+  });
+  const prompt = await unload;
+  expect(prompt.type()).toBe('beforeunload');
+  await prompt.dismiss();
+  await expect(page.getByRole('button', { name: 'Ghế A1', exact: true })).toHaveAttribute(
+    'data-seat-type',
+    '2',
+  );
+  await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Ở lại' }).click();
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await page.goBack();
+  await expect(page).toHaveURL(/customers/);
 });
