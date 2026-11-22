@@ -1,0 +1,49 @@
+# Installed dependencies, build and tool caches (both independent frontends)
+node_modules/
+dist/
+build/
+coverage/
+.vite*/
+.cache/
+.eslintcache
+*.tsbuildinfo
+
+# Generated browser tests and reports
+test-results/
+playwright-report/
+playwright-http-report/
+blob-report/
+
+# Local secrets; reviewed, public Vite configuration is kept explicitly
+.env*
+!Customer/.env.example
+!Customer/.env.mock
+!Dashboard/.env.example
+!Dashboard/.env.development
+!Dashboard/.env.production
+*.pem
+*.key
+*.p12
+*.pfx
+.npmrc
+
+# Historical archives and generated source deliveries are not source-of-truth
+/Customer.zip
+**/delivery/
+**/artifacts/
+**/archive/
+**/backups/
+**/tmp/
+
+# Logs, temporary files, IDE and operating system metadata
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/

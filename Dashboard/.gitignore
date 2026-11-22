@@ -1,0 +1,26 @@
+﻿# Installed dependencies and generated output
+node_modules/
+/dist/
+/build/
+/coverage/
+/delivery/
+/test-results/
+/playwright-report/
+/playwright-http-report/
+.vite/
+.cache/
+
+# Local configuration and secrets
+.env
+.env*.local
+*.pem
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Historical/reference material must stay outside the source delivery
+/archive/
+/tmp/
+/Dashboard/

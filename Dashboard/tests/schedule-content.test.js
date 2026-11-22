@@ -1,0 +1,157 @@
+﻿import { beforeEach, describe, it, expect } from 'vitest';
+import { mockAdapter, resetMock } from '../src/mocks/adapter';
+import { can } from '../src/utils/permissions';
+import { inBranchScope, validateShift, shiftsConflict } from '../src/utils/schedule';
+import { validMovieRating, cinemaReview, movieComment } from '../src/utils/contentModels';
+const request = (url, method = 'get', data, params) =>
+  mockAdapter({ url, method, data: JSON.stringify(data || {}), params, headers: {} });
+const login = (role) =>
+  request('/auth/login', 'post', { email: role + '@cinema.test', password: 'Demo@12345' });
+const shift = {
+  branchId: 1,
+  wDate: 3,
+  startTime: '09:00:00',
+  endTime: '12:00:00',
+  work: 'Ca thử nghiệm',
+};
+beforeEach(resetMock);
+describe('Personal and scoped weekly schedules', () => {
+  it('staff with wildcard still cannot manage schedules or read cinema reviews', () => {
+    const staff = { role: 'STAFF', permissions: ['*'] };
+    expect(can(staff, 'my-schedule')).toBe(true);
+    for (const module of ['workshifts', 'cinema-reviews', 'comment-reports'])
+      expect(can(staff, module)).toBe(false);
+    expect(can({ role: 'ADMIN', permissions: ['*'] }, 'settings')).toBe(false);
+  });
+  it('scope supports multiple assigned branches and fails closed on missing assignments', () => {
+    expect(inBranchScope({ role: 'MANAGER', branchIds: [1, 2] }, 2)).toBe(true);
+    expect(inBranchScope({ role: 'MANAGER', branchIds: [1, 2] }, 3)).toBe(false);
+    expect(inBranchScope({ role: 'MANAGER' }, 1)).toBe(false);
+    expect(inBranchScope({ role: 'ADMIN' }, 2)).toBe(true);
+  });
+  it('staff endpoint returns own rows without other employees; tampering and all-list denied', async () => {
+    await login('staff');
+    const own = (await request('/work-shifts/me')).data.data;
+    expect(own).toHaveLength(1);
+    expect(own[0].employeeId).toBe('NV003');
+    expect(own[0].employees).toBeUndefined();
+    await expect(
+      request('/work-shifts/me', 'get', null, { employeeId: 'NV002' }),
+    ).rejects.toMatchObject({ response: { status: 422 } });
+    for (const url of ['/work-shifts', '/work-shifts/branch/1', '/employees'])
+      await expect(request(url)).rejects.toMatchObject({ response: { status: 403 } });
+    await expect(request('/employees/NV003/work-shifts', 'put', [shift])).rejects.toMatchObject({
+      response: { status: 403 },
+    });
+  });
+  it('returns empty personal schedule without fallback fixtures', async () => {
+    await login('admin');
+    expect((await request('/work-shifts/me')).data.data).toEqual([]);
+  });
+  it('manager reads own branch and personal schedule, rejects other branch and employee writes', async () => {
+    await login('manager');
+    expect((await request('/work-shifts')).data.data.every((s) => s.branchId === 1)).toBe(true);
+    expect((await request('/work-shifts/me')).data.data[0].employeeId).toBe('NV002');
+    await expect(request('/work-shifts/branch/2')).rejects.toMatchObject({
+      response: { status: 403 },
+    });
+    await expect(
+      request('/employees/NV004/work-shifts', 'put', [{ ...shift, branchId: 2 }]),
+    ).rejects.toMatchObject({ response: { status: 404 } });
+    await expect(
+      request('/work-shifts', 'put', { ...shift, branchId: 2 }, { ...shift, branchId: 2 }),
+    ).rejects.toMatchObject({ response: { status: 403 } });
+  });
+  it('manager creates, edits, unassigns and deletes in scope, with atomic conflict rejection', async () => {
+    await login('manager');
+    await request('/employees/NV003/work-shifts', 'put', [shift]);
+    const overlapping = { ...shift, startTime: '11:00:00', endTime: '13:00:00' };
+    await expect(
+      request('/employees/NV003/work-shifts', 'put', [{ ...shift, wDate: 4 }, overlapping]),
+    ).rejects.toMatchObject({ response: { status: 409 } });
+    expect((await request('/work-shifts')).data.data.some((s) => s.wDate === 4)).toBe(false);
+    const updated = (await request('/work-shifts', 'put', { ...shift, work: 'Đã sửa' }, shift)).data
+      .data;
+    expect(updated.work).toBe('Đã sửa');
+    await request('/employees/NV003/work-shifts', 'delete', null, shift);
+    expect((await request('/work-shifts/detail', 'get', null, shift)).data.data.employees).toEqual(
+      [],
+    );
+    await request('/work-shifts', 'delete', null, shift);
+    await expect(request('/work-shifts/detail', 'get', null, shift)).rejects.toMatchObject({
+      response: { status: 404 },
+    });
+  });
+  it('admin composite shift keys keep identical times in different branches separate', async () => {
+    await login('admin');
+    const same = { startTime: '09:00:00', endTime: '17:00:00', wDate: 1 };
+    expect((await request('/work-shifts')).data.data.some((s) => s.branchId === 2)).toBe(true);
+    await request(
+      '/work-shifts',
+      'put',
+      { ...same, branchId: 2, work: 'Thủ Đức đã sửa' },
+      { ...same, branchId: 2 },
+    );
+    expect(
+      (await request('/work-shifts/detail', 'get', null, { ...same, branchId: 1 })).data.data.work,
+    ).toBe('Vận hành quầy');
+    await request('/work-shifts', 'delete', null, { ...same, branchId: 2 });
+    expect(
+      (await request('/work-shifts/detail', 'get', null, { ...same, branchId: 1 })).data.data
+        .employees[0].eUserId,
+    ).toBe('NV003');
+  });
+  it('rejects invalid hours, weekdays and overnight; adjacent shifts are allowed', () => {
+    for (const change of [
+      { startTime: '25:00' },
+      { wDate: 1.5 },
+      { branchId: -1 },
+      { endTime: '08:00:00' },
+      { startTime: '09:00', endTime: '09:00:00' },
+      { work: ' ' },
+    ])
+      expect(() => validateShift({ ...shift, ...change })).toThrow();
+    expect(shiftsConflict(shift, { ...shift, startTime: '12:00', endTime: '13:00' })).toBe(false);
+  });
+});
+describe('Separate movie comments and cinema reviews', () => {
+  it('accepts exactly integer stars 1–5; nullable movie content and optional cinema room', () => {
+    for (const rating of [1, 2, 3, 4, 5]) expect(validMovieRating(rating)).toBe(true);
+    for (const rating of [0, 6, NaN, null, '5', 2.5]) expect(validMovieRating(rating)).toBe(false);
+    expect(movieComment({ rating: 5, content: null }).content).toBe(null);
+    const review = cinemaReview({ reviewId: 1, branchId: 1, rating: 5 });
+    expect(review.roomId).toBe(null);
+    expect(review.rating).toBeUndefined();
+  });
+  it('manager review and report scope is enforced before pagination, never masquerades comments as reviews', async () => {
+    await login('manager');
+    const result = await request('/cinema-reviews', 'get', null, { page: 2, pageSize: 10 });
+    expect(result.data.meta.total).toBe(12);
+    expect(result.data.data).toHaveLength(2);
+    expect(result.data.data.every((r) => r.branchId === 1 && r.rating === undefined)).toBe(true);
+    await expect(request('/cinema-reviews', 'get', null, { branchId: 2 })).rejects.toMatchObject({
+      response: { status: 403 },
+    });
+    await expect(
+      request('/comment-reports/4/resolve', 'post', { action: 'DELETE' }),
+    ).rejects.toMatchObject({ response: { status: 404 } });
+    await login('admin');
+    expect((await request('/cinema-reviews')).data.data).toHaveLength(32);
+  });
+  it('invalid legacy moderation actions leave report pending and content unchanged', async () => {
+    await login('manager');
+    for (const action of ['HIDE', 'RESOLVE'])
+      await expect(request('/comment-reports/1/resolve', 'post', { action })).rejects.toMatchObject(
+        { response: { status: 422 } },
+      );
+    const report = (await request('/comment-reports/1')).data.data;
+    expect(report.status).toBe('PENDING');
+    expect(report.target.contentStatus).toBe('VISIBLE');
+  });
+  it('deleting cinema review preserves movie comment sharing numeric ID', async () => {
+    await login('manager');
+    await request('/comment-reports/2/resolve', 'post', { action: 'DELETE' });
+    expect((await request('/comment-reports/1')).data.data.target.contentStatus).toBe('VISIBLE');
+    expect((await request('/cinema-reviews')).data.data.some((r) => r.reviewId === 1)).toBe(false);
+  });
+});
